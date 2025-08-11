@@ -1,7 +1,10 @@
 package config
 
 import (
+	"log"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 // Config holds all configuration for our application
@@ -24,6 +27,12 @@ type Config struct {
 // LoadConfig loads configuration from environment variables
 // This function returns a pointer to Config struct
 func LoadConfig() *Config {
+	// Load .env file if it exists
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("Warning: .env file not found, using default values")
+	}
+
 	return &Config{
 		// Database settings
 		DBHost:     getEnv("DB_HOST", "localhost"),

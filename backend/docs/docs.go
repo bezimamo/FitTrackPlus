@@ -24,6 +24,102 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/login": {
+            "post": {
+                "description": "Authenticate user and return JWT token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login user",
+                "parameters": [
+                    {
+                        "description": "Login credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/auth.AuthResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "description": "Create a new user account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Register a new user",
+                "parameters": [
+                    {
+                        "description": "Registration data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/auth.AuthResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "description": "Check if the API server is running",
@@ -44,6 +140,822 @@ const docTemplate = `{
                             "type": "object",
                             "additionalProperties": true
                         }
+                    }
+                }
+            }
+        },
+        "/users/profile": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get the current user's complete profile",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Get user profile",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/profile.ProfileResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update the current authenticated user's profile",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Update user profile",
+                "parameters": [
+                    {
+                        "description": "Profile update data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.UpdateProfileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/users/profile/completion": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Check if the current user's profile is complete",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Check profile completion",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/users/profile/setup": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Complete profile setup for new users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Setup user profile",
+                "parameters": [
+                    {
+                        "description": "Profile setup data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/profile.ProfileSetupRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/profile.ProfileResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/users/profile/upload-image": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Upload a profile image for the current user",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Upload profile image",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Profile image file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/profile.ProfileResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "auth.AuthResponse": {
+            "type": "object",
+            "properties": {
+                "expires_at": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/models.User"
+                }
+            }
+        },
+        "auth.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "auth.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "first_name",
+                "last_name",
+                "password",
+                "role"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string",
+                    "enum": [
+                        "member",
+                        "trainer",
+                        "physio",
+                        "admin"
+                    ]
+                }
+            }
+        },
+        "auth.UpdateProfileRequest": {
+            "type": "object",
+            "required": [
+                "first_name",
+                "last_name"
+            ],
+            "properties": {
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Booking": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "physio": {
+                    "$ref": "#/definitions/models.User"
+                },
+                "physio_id": {
+                    "description": "Can be null for training sessions",
+                    "type": "integer"
+                },
+                "session_date": {
+                    "type": "string"
+                },
+                "session_type": {
+                    "description": "training, physio",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "pending, approved, completed, cancelled",
+                    "type": "string"
+                },
+                "trainer": {
+                    "$ref": "#/definitions/models.User"
+                },
+                "trainer_id": {
+                    "description": "Can be null for physio sessions",
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user": {
+                    "description": "Relationships",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    ]
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.Payment": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "chapa_ref": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "payment_date": {
+                    "type": "string"
+                },
+                "status": {
+                    "description": "pending, completed, failed",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user": {
+                    "description": "Relationship",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    ]
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.Plan": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "diet": {
+                    "description": "JSON string of diet plan",
+                    "type": "string"
+                },
+                "duration": {
+                    "description": "in days",
+                    "type": "integer"
+                },
+                "exercises": {
+                    "description": "JSON string of exercises",
+                    "type": "string"
+                },
+                "goal_type": {
+                    "description": "lose_weight, gain_muscle, flexibility, rehab",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "physio_exercises": {
+                    "description": "JSON string of physio exercises",
+                    "type": "string"
+                },
+                "plan_type": {
+                    "description": "fitness, diet, physio",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_plans": {
+                    "description": "Relationships",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.UserPlan"
+                    }
+                }
+            }
+        },
+        "models.ProgressLog": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "logged_at": {
+                    "type": "string"
+                },
+                "measurements": {
+                    "description": "JSON string of body measurements",
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "physio_progress": {
+                    "description": "JSON string of physio progress",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user": {
+                    "description": "Relationship",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    ]
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "weight": {
+                    "type": "number"
+                },
+                "workout_completion": {
+                    "description": "JSON string of completed workouts",
+                    "type": "string"
+                }
+            }
+        },
+        "models.User": {
+            "type": "object",
+            "properties": {
+                "bookings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Booking"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "payments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Payment"
+                    }
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "plans": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.UserPlan"
+                    }
+                },
+                "profile": {
+                    "description": "Relationships - these will be populated when we query the database",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.UserProfile"
+                        }
+                    ]
+                },
+                "progress": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ProgressLog"
+                    }
+                },
+                "role": {
+                    "description": "member, trainer, physio, admin",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UserPlan": {
+            "type": "object",
+            "properties": {
+                "assigned_at": {
+                    "type": "string"
+                },
+                "completed_at": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "plan": {
+                    "$ref": "#/definitions/models.Plan"
+                },
+                "plan_id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "active, completed, paused",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user": {
+                    "description": "Relationships",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    ]
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.UserProfile": {
+            "type": "object",
+            "properties": {
+                "age": {
+                    "type": "integer"
+                },
+                "allergies": {
+                    "type": "string"
+                },
+                "body_fat_percentage": {
+                    "description": "Physical Measurements",
+                    "type": "number"
+                },
+                "body_measurements": {
+                    "description": "JSON string of measurements",
+                    "type": "string"
+                },
+                "communication_preference": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "goals": {
+                    "description": "Fitness Goals",
+                    "type": "string"
+                },
+                "height": {
+                    "description": "Basic Information",
+                    "type": "number"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_profile_complete": {
+                    "description": "Profile Completion",
+                    "type": "boolean"
+                },
+                "medical_history": {
+                    "description": "Medical Information",
+                    "type": "string"
+                },
+                "medications": {
+                    "type": "string"
+                },
+                "muscle_mass": {
+                    "type": "number"
+                },
+                "physio_needs": {
+                    "type": "string"
+                },
+                "preferred_workout_time": {
+                    "description": "Preferences",
+                    "type": "string"
+                },
+                "profile_image_url": {
+                    "description": "Profile Image",
+                    "type": "string"
+                },
+                "target_weight": {
+                    "type": "number"
+                },
+                "timeline": {
+                    "description": "days to achieve goal",
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "weight": {
+                    "description": "in kg",
+                    "type": "number"
+                },
+                "workout_days": {
+                    "description": "JSON string of days",
+                    "type": "string"
+                }
+            }
+        },
+        "profile.ProfileResponse": {
+            "type": "object",
+            "properties": {
+                "completion_percentage": {
+                    "type": "number"
+                },
+                "is_complete": {
+                    "type": "boolean"
+                },
+                "profile": {
+                    "$ref": "#/definitions/models.UserProfile"
+                }
+            }
+        },
+        "profile.ProfileSetupRequest": {
+            "type": "object",
+            "required": [
+                "age",
+                "communication_preference",
+                "gender",
+                "goals",
+                "height",
+                "preferred_workout_time",
+                "target_weight",
+                "timeline",
+                "weight",
+                "workout_days"
+            ],
+            "properties": {
+                "age": {
+                    "type": "integer",
+                    "maximum": 120,
+                    "minimum": 13
+                },
+                "allergies": {
+                    "type": "string"
+                },
+                "body_fat_percentage": {
+                    "description": "Physical Measurements (optional)",
+                    "type": "number"
+                },
+                "body_measurements": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "number",
+                        "format": "float64"
+                    }
+                },
+                "communication_preference": {
+                    "type": "string",
+                    "enum": [
+                        "email",
+                        "phone",
+                        "sms"
+                    ]
+                },
+                "gender": {
+                    "type": "string",
+                    "enum": [
+                        "male",
+                        "female",
+                        "other"
+                    ]
+                },
+                "goals": {
+                    "description": "Fitness Goals",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "height": {
+                    "description": "Basic Information",
+                    "type": "number",
+                    "maximum": 300,
+                    "minimum": 50
+                },
+                "medical_history": {
+                    "description": "Medical Information (optional)",
+                    "type": "string"
+                },
+                "medications": {
+                    "type": "string"
+                },
+                "muscle_mass": {
+                    "type": "number"
+                },
+                "physio_needs": {
+                    "type": "string"
+                },
+                "preferred_workout_time": {
+                    "description": "Preferences",
+                    "type": "string"
+                },
+                "target_weight": {
+                    "type": "number",
+                    "maximum": 500,
+                    "minimum": 20
+                },
+                "timeline": {
+                    "type": "integer",
+                    "maximum": 3650,
+                    "minimum": 30
+                },
+                "weight": {
+                    "type": "number",
+                    "maximum": 500,
+                    "minimum": 20
+                },
+                "workout_days": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
                     }
                 }
             }

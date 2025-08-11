@@ -1,4 +1,409 @@
 basePath: /api/v1
+definitions:
+  auth.AuthResponse:
+    properties:
+      expires_at:
+        type: string
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+    type: object
+  auth.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  auth.RegisterRequest:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      phone:
+        type: string
+      role:
+        enum:
+        - member
+        - trainer
+        - physio
+        - admin
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
+    - role
+    type: object
+  auth.UpdateProfileRequest:
+    properties:
+      first_name:
+        type: string
+      last_name:
+        type: string
+      phone:
+        type: string
+    required:
+    - first_name
+    - last_name
+    type: object
+  models.Booking:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      notes:
+        type: string
+      physio:
+        $ref: '#/definitions/models.User'
+      physio_id:
+        description: Can be null for training sessions
+        type: integer
+      session_date:
+        type: string
+      session_type:
+        description: training, physio
+        type: string
+      status:
+        description: pending, approved, completed, cancelled
+        type: string
+      trainer:
+        $ref: '#/definitions/models.User'
+      trainer_id:
+        description: Can be null for physio sessions
+        type: integer
+      updated_at:
+        type: string
+      user:
+        allOf:
+        - $ref: '#/definitions/models.User'
+        description: Relationships
+      user_id:
+        type: integer
+    type: object
+  models.Payment:
+    properties:
+      amount:
+        type: number
+      chapa_ref:
+        type: string
+      created_at:
+        type: string
+      currency:
+        type: string
+      id:
+        type: integer
+      payment_date:
+        type: string
+      status:
+        description: pending, completed, failed
+        type: string
+      updated_at:
+        type: string
+      user:
+        allOf:
+        - $ref: '#/definitions/models.User'
+        description: Relationship
+      user_id:
+        type: integer
+    type: object
+  models.Plan:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      diet:
+        description: JSON string of diet plan
+        type: string
+      duration:
+        description: in days
+        type: integer
+      exercises:
+        description: JSON string of exercises
+        type: string
+      goal_type:
+        description: lose_weight, gain_muscle, flexibility, rehab
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      name:
+        type: string
+      physio_exercises:
+        description: JSON string of physio exercises
+        type: string
+      plan_type:
+        description: fitness, diet, physio
+        type: string
+      updated_at:
+        type: string
+      user_plans:
+        description: Relationships
+        items:
+          $ref: '#/definitions/models.UserPlan'
+        type: array
+    type: object
+  models.ProgressLog:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      logged_at:
+        type: string
+      measurements:
+        description: JSON string of body measurements
+        type: string
+      notes:
+        type: string
+      physio_progress:
+        description: JSON string of physio progress
+        type: string
+      updated_at:
+        type: string
+      user:
+        allOf:
+        - $ref: '#/definitions/models.User'
+        description: Relationship
+      user_id:
+        type: integer
+      weight:
+        type: number
+      workout_completion:
+        description: JSON string of completed workouts
+        type: string
+    type: object
+  models.User:
+    properties:
+      bookings:
+        items:
+          $ref: '#/definitions/models.Booking'
+        type: array
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      last_name:
+        type: string
+      payments:
+        items:
+          $ref: '#/definitions/models.Payment'
+        type: array
+      phone:
+        type: string
+      plans:
+        items:
+          $ref: '#/definitions/models.UserPlan'
+        type: array
+      profile:
+        allOf:
+        - $ref: '#/definitions/models.UserProfile'
+        description: Relationships - these will be populated when we query the database
+      progress:
+        items:
+          $ref: '#/definitions/models.ProgressLog'
+        type: array
+      role:
+        description: member, trainer, physio, admin
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.UserPlan:
+    properties:
+      assigned_at:
+        type: string
+      completed_at:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      plan:
+        $ref: '#/definitions/models.Plan'
+      plan_id:
+        type: integer
+      status:
+        description: active, completed, paused
+        type: string
+      updated_at:
+        type: string
+      user:
+        allOf:
+        - $ref: '#/definitions/models.User'
+        description: Relationships
+      user_id:
+        type: integer
+    type: object
+  models.UserProfile:
+    properties:
+      age:
+        type: integer
+      allergies:
+        type: string
+      body_fat_percentage:
+        description: Physical Measurements
+        type: number
+      body_measurements:
+        description: JSON string of measurements
+        type: string
+      communication_preference:
+        type: string
+      created_at:
+        type: string
+      gender:
+        type: string
+      goals:
+        description: Fitness Goals
+        type: string
+      height:
+        description: Basic Information
+        type: number
+      id:
+        type: integer
+      is_profile_complete:
+        description: Profile Completion
+        type: boolean
+      medical_history:
+        description: Medical Information
+        type: string
+      medications:
+        type: string
+      muscle_mass:
+        type: number
+      physio_needs:
+        type: string
+      preferred_workout_time:
+        description: Preferences
+        type: string
+      profile_image_url:
+        description: Profile Image
+        type: string
+      target_weight:
+        type: number
+      timeline:
+        description: days to achieve goal
+        type: integer
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+      weight:
+        description: in kg
+        type: number
+      workout_days:
+        description: JSON string of days
+        type: string
+    type: object
+  profile.ProfileResponse:
+    properties:
+      completion_percentage:
+        type: number
+      is_complete:
+        type: boolean
+      profile:
+        $ref: '#/definitions/models.UserProfile'
+    type: object
+  profile.ProfileSetupRequest:
+    properties:
+      age:
+        maximum: 120
+        minimum: 13
+        type: integer
+      allergies:
+        type: string
+      body_fat_percentage:
+        description: Physical Measurements (optional)
+        type: number
+      body_measurements:
+        additionalProperties:
+          format: float64
+          type: number
+        type: object
+      communication_preference:
+        enum:
+        - email
+        - phone
+        - sms
+        type: string
+      gender:
+        enum:
+        - male
+        - female
+        - other
+        type: string
+      goals:
+        description: Fitness Goals
+        items:
+          type: string
+        minItems: 1
+        type: array
+      height:
+        description: Basic Information
+        maximum: 300
+        minimum: 50
+        type: number
+      medical_history:
+        description: Medical Information (optional)
+        type: string
+      medications:
+        type: string
+      muscle_mass:
+        type: number
+      physio_needs:
+        type: string
+      preferred_workout_time:
+        description: Preferences
+        type: string
+      target_weight:
+        maximum: 500
+        minimum: 20
+        type: number
+      timeline:
+        maximum: 3650
+        minimum: 30
+        type: integer
+      weight:
+        maximum: 500
+        minimum: 20
+        type: number
+      workout_days:
+        items:
+          type: string
+        minItems: 1
+        type: array
+    required:
+    - age
+    - communication_preference
+    - gender
+    - goals
+    - height
+    - preferred_workout_time
+    - target_weight
+    - timeline
+    - weight
+    - workout_days
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -13,6 +418,70 @@ info:
   title: FitTrack+ API
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return JWT token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Login user
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account
+      parameters:
+      - description: Registration data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/auth.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Register a new user
+      tags:
+      - Auth
   /health:
     get:
       consumes:
@@ -29,6 +498,151 @@ paths:
       summary: Health Check
       tags:
       - Health
+  /users/profile:
+    get:
+      consumes:
+      - application/json
+      description: Get the current user's complete profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/profile.ProfileResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user profile
+      tags:
+      - Profile
+    put:
+      consumes:
+      - application/json
+      description: Update the current authenticated user's profile
+      parameters:
+      - description: Profile update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.UpdateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update user profile
+      tags:
+      - Users
+  /users/profile/completion:
+    get:
+      consumes:
+      - application/json
+      description: Check if the current user's profile is complete
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Check profile completion
+      tags:
+      - Profile
+  /users/profile/setup:
+    post:
+      consumes:
+      - application/json
+      description: Complete profile setup for new users
+      parameters:
+      - description: Profile setup data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/profile.ProfileSetupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/profile.ProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Setup user profile
+      tags:
+      - Profile
+  /users/profile/upload-image:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a profile image for the current user
+      parameters:
+      - description: Profile image file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/profile.ProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Upload profile image
+      tags:
+      - Profile
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer" followed by a space and JWT token.

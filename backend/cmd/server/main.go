@@ -6,8 +6,11 @@ import (
 	"net/http"
 	"os"
 
+	"fittrackplus/internal/auth"
 	"fittrackplus/internal/common/config"
 	"fittrackplus/internal/common/database"
+	"fittrackplus/internal/profile"
+	_ "fittrackplus/docs" // This is required for swagger
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -92,24 +95,38 @@ func main() {
 // setupRoutes defines all our API endpoints
 // In Go, we group related functionality into functions
 func setupRoutes(router *gin.Engine, cfg *config.Config) {
+	// Create handlers
+	authHandler := auth.NewAuthHandler(cfg)
+	profileHandler := profile.NewProfileHandler(cfg)
+
 	// API version 1 group
 	api := router.Group("/api/v1")
 	{
 		// Health check endpoint
 		api.GET("/health", healthCheck)
 		
-		// Auth routes
-		auth := api.Group("/auth")
+		// Auth routes (public - no authentication required)
+		authGroup := api.Group("/auth")
 		{
-			auth.POST("/register", registerUser)
-			auth.POST("/login", loginUser)
+			authGroup.POST("/register", authHandler.Register)
+			authGroup.POST("/login", authHandler.Login)
 		}
 		
-		// User routes (will be protected with middleware later)
+		// User routes (protected - authentication required)
 		users := api.Group("/users")
+		users.Use(auth.AuthMiddleware(cfg)) // Apply authentication middleware
 		{
-			users.GET("/profile", getUserProfile)
-			users.PUT("/profile", updateUserProfile)
+			// Basic user profile (from auth)
+			users.PUT("/profile", authHandler.UpdateProfile)
+			
+			// Enhanced profile management
+			profileGroup := users.Group("/profile")
+			{
+				profileGroup.POST("/setup", profileHandler.SetupProfile)
+				profileGroup.GET("", profileHandler.GetProfile)
+				profileGroup.POST("/upload-image", profileHandler.UploadProfileImage)
+				profileGroup.GET("/completion", profileHandler.CheckProfileCompletion)
+			}
 		}
 	}
 
@@ -131,6 +148,9 @@ func setupRoutes(router *gin.Engine, cfg *config.Config) {
 				"users": gin.H{
 					"profile": "GET /api/v1/users/profile",
 					"update": "PUT /api/v1/users/profile",
+					"profile_setup": "POST /api/v1/users/profile/setup",
+					"profile_image": "POST /api/v1/users/profile/upload-image",
+					"profile_completion": "GET /api/v1/users/profile/completion",
 				},
 			},
 		})
@@ -153,41 +173,5 @@ func healthCheck(c *gin.Context) {
 		"status": "healthy",
 		"message": "FitTrack+ API is running!",
 		"timestamp": "2024-01-01T00:00:00Z", // We'll make this dynamic later
-	})
-}
-
-// registerUser handles user registration
-// For now, this is a placeholder - we'll implement it properly later
-func registerUser(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "User registration endpoint - coming soon!",
-		"status": "not_implemented",
-	})
-}
-
-// loginUser handles user login
-// For now, this is a placeholder - we'll implement it properly later
-func loginUser(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "User login endpoint - coming soon!",
-		"status": "not_implemented",
-	})
-}
-
-// getUserProfile retrieves user profile information
-// For now, this is a placeholder - we'll implement it properly later
-func getUserProfile(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Get user profile endpoint - coming soon!",
-		"status": "not_implemented",
-	})
-}
-
-// updateUserProfile updates user profile information
-// For now, this is a placeholder - we'll implement it properly later
-func updateUserProfile(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Update user profile endpoint - coming soon!",
-		"status": "not_implemented",
 	})
 } 

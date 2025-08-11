@@ -31,19 +31,45 @@ type User struct {
 
 // UserProfile contains additional user information
 type UserProfile struct {
-	ID            uint           `json:"id" gorm:"primaryKey"`
-	UserID        uint           `json:"user_id" gorm:"uniqueIndex"`
-	Height        float64        `json:"height"` // in cm
-	Weight        float64        `json:"weight"` // in kg
-	Age           int            `json:"age"`
-	Gender        string         `json:"gender"`
-	Goals         string         `json:"goals"` // JSON string of fitness goals
-	MedicalHistory string        `json:"medical_history"`
-	PhysioNeeds   string         `json:"physio_needs"`
-	ProfileImage  string         `json:"profile_image"`
-	CreatedAt     time.Time      `json:"created_at"`
-	UpdatedAt     time.Time      `json:"updated_at"`
-	DeletedAt     gorm.DeletedAt `json:"-" gorm:"index"`
+	ID                    uint           `json:"id" gorm:"primaryKey"`
+	UserID                uint           `json:"user_id" gorm:"uniqueIndex"`
+	
+	// Basic Information
+	Height                float64        `json:"height"` // in cm
+	Weight                float64        `json:"weight"` // in kg
+	Age                   int            `json:"age"`
+	Gender                string         `json:"gender"`
+	
+	// Fitness Goals
+	Goals                 string         `json:"goals"` // JSON string of fitness goals
+	TargetWeight          float64        `json:"target_weight"`
+	Timeline              int            `json:"timeline"` // days to achieve goal
+	
+	// Medical Information
+	MedicalHistory        string         `json:"medical_history"`
+	Allergies             string         `json:"allergies"`
+	Medications           string         `json:"medications"`
+	PhysioNeeds           string         `json:"physio_needs"`
+	
+	// Physical Measurements
+	BodyFatPercentage     float64        `json:"body_fat_percentage"`
+	MuscleMass            float64        `json:"muscle_mass"`
+	BodyMeasurements      string         `json:"body_measurements"` // JSON string of measurements
+	
+	// Profile Image
+	ProfileImageURL       string         `json:"profile_image_url"`
+	
+	// Preferences
+	PreferredWorkoutTime  string         `json:"preferred_workout_time"`
+	WorkoutDays           string         `json:"workout_days"` // JSON string of days
+	CommunicationPreference string       `json:"communication_preference"`
+	
+	// Profile Completion
+	IsProfileComplete     bool           `json:"is_profile_complete" gorm:"default:false"`
+	
+	CreatedAt             time.Time      `json:"created_at"`
+	UpdatedAt             time.Time      `json:"updated_at"`
+	DeletedAt             gorm.DeletedAt `json:"-" gorm:"index"`
 
 	// Relationship
 	User User `json:"-" gorm:"foreignKey:UserID"`
