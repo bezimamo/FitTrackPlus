@@ -44,7 +44,13 @@ export default function LoginPage() {
       // Save token in cookie (for example, using document.cookie)
       document.cookie = `ft_token=${data.token}; path=/`;
 
-      router.push(next);
+      // 👇 NEW LOGIC
+      if (!data.user?.hasProfile) {
+        router.push("/dashboard/profile"); // redirect if profile not complete
+      } else {
+        router.push(next || "/dashboard"); // otherwise to dashboard
+      }
+
     } catch (error) {
       console.error(error);
       setErr("Could not connect to server.");
