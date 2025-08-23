@@ -62,6 +62,9 @@ func AutoMigrate() error {
 	return DB.AutoMigrate(
 		&models.User{},
 		&models.UserProfile{},
+		&models.TrainerProfile{},
+		&models.AdminProfile{},
+		&models.PhysioProfile{},
 		&models.Plan{},
 		&models.UserPlan{},
 		&models.ProgressLog{},

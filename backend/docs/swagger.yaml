@@ -58,6 +58,305 @@ definitions:
     - first_name
     - last_name
     type: object
+  dashboard.AdminDashboardData:
+    properties:
+      recent_signups:
+        items:
+          $ref: '#/definitions/dashboard.UserInfo'
+        type: array
+      revenue_stats:
+        $ref: '#/definitions/dashboard.RevenueStats'
+      system_health:
+        $ref: '#/definitions/dashboard.SystemHealth'
+      user_stats:
+        $ref: '#/definitions/dashboard.UserStats'
+    type: object
+  dashboard.ClientProgress:
+    properties:
+      client_id:
+        type: integer
+      client_name:
+        type: string
+      last_session:
+        type: string
+      plan_name:
+        type: string
+      progress:
+        type: number
+    type: object
+  dashboard.DashboardResponse:
+    properties:
+      admin_data:
+        $ref: '#/definitions/dashboard.AdminDashboardData'
+      member_data:
+        allOf:
+        - $ref: '#/definitions/dashboard.MemberDashboardData'
+        description: Role-specific data
+      notifications:
+        items:
+          $ref: '#/definitions/dashboard.Notification'
+        type: array
+      quick_actions:
+        items:
+          $ref: '#/definitions/dashboard.QuickAction'
+        type: array
+      recent_activity:
+        items:
+          $ref: '#/definitions/dashboard.RecentActivity'
+        type: array
+      stats:
+        $ref: '#/definitions/dashboard.DashboardStats'
+      trainer_data:
+        $ref: '#/definitions/dashboard.TrainerDashboardData'
+      user_info:
+        $ref: '#/definitions/dashboard.UserInfo'
+      user_role:
+        type: string
+    type: object
+  dashboard.DashboardStats:
+    properties:
+      active_plans:
+        type: integer
+      completion_rate:
+        type: number
+      total_sessions:
+        type: integer
+      total_users:
+        type: integer
+    type: object
+  dashboard.GoalInfo:
+    properties:
+      current:
+        type: number
+      deadline:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      progress:
+        type: number
+      target:
+        type: number
+      title:
+        type: string
+    type: object
+  dashboard.MemberDashboardData:
+    properties:
+      current_plan:
+        $ref: '#/definitions/dashboard.PlanSummary'
+      goals:
+        items:
+          $ref: '#/definitions/dashboard.GoalInfo'
+        type: array
+      progress_summary:
+        $ref: '#/definitions/dashboard.ProgressSummary'
+      upcoming_sessions:
+        items:
+          $ref: '#/definitions/dashboard.SessionInfo'
+        type: array
+    type: object
+  dashboard.Notification:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      is_read:
+        type: boolean
+      message:
+        type: string
+      title:
+        type: string
+      type:
+        description: '"info", "warning", "success", "error"'
+        type: string
+    type: object
+  dashboard.PlanSummary:
+    properties:
+      end_date:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      progress:
+        description: 0-100
+        type: number
+      start_date:
+        type: string
+      status:
+        description: '"active", "completed", "paused"'
+        type: string
+      type:
+        description: '"workout", "diet", "mixed"'
+        type: string
+    type: object
+  dashboard.ProgressSummary:
+    properties:
+      body_fat_reduction:
+        type: number
+      current_weight:
+        type: number
+      muscle_gain:
+        type: number
+      overall_progress:
+        type: number
+      target_weight:
+        type: number
+      weight_lost:
+        type: number
+    type: object
+  dashboard.QuickAction:
+    properties:
+      color:
+        type: string
+      description:
+        type: string
+      icon:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+      url:
+        type: string
+    type: object
+  dashboard.RecentActivity:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      type:
+        description: '"login", "profile_update", "plan_assigned", etc.'
+        type: string
+    type: object
+  dashboard.RevenueStats:
+    properties:
+      active_subscriptions:
+        type: integer
+      monthly_revenue:
+        type: number
+      pending_payments:
+        type: integer
+      total_revenue:
+        type: number
+    type: object
+  dashboard.SessionInfo:
+    properties:
+      client_name:
+        type: string
+      date:
+        type: string
+      duration:
+        description: minutes
+        type: integer
+      id:
+        type: integer
+      status:
+        description: '"scheduled", "completed", "cancelled"'
+        type: string
+      title:
+        type: string
+      trainer_name:
+        type: string
+      type:
+        description: '"workout", "consultation", "assessment"'
+        type: string
+    type: object
+  dashboard.SystemHealth:
+    properties:
+      api_server_status:
+        type: string
+      database_status:
+        type: string
+      last_backup:
+        type: string
+      uptime:
+        type: string
+    type: object
+  dashboard.TrainerDashboardData:
+    properties:
+      active_clients:
+        type: integer
+      client_progress:
+        items:
+          $ref: '#/definitions/dashboard.ClientProgress'
+        type: array
+      today_sessions:
+        items:
+          $ref: '#/definitions/dashboard.SessionInfo'
+        type: array
+      total_clients:
+        type: integer
+    type: object
+  dashboard.UserInfo:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      last_name:
+        type: string
+      role:
+        type: string
+    type: object
+  dashboard.UserStats:
+    properties:
+      active_users:
+        type: integer
+      new_this_month:
+        type: integer
+      total_members:
+        type: integer
+      total_trainers:
+        type: integer
+    type: object
+  models.AdminProfile:
+    properties:
+      access_level:
+        description: full_access, limited_access, read_only
+        type: string
+      admin_role:
+        description: Administrative Information
+        type: string
+      created_at:
+        type: string
+      department:
+        description: IT, Management, Operations
+        type: string
+      emergency_contact:
+        description: Contact Information
+        type: string
+      emergency_phone:
+        type: string
+      id:
+        type: integer
+      is_profile_complete:
+        description: Profile Completion
+        type: boolean
+      last_login:
+        type: string
+      login_history:
+        description: JSON string of recent logins
+        type: string
+      office_location:
+        type: string
+      permissions:
+        description: Administrative Details
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
   models.Booking:
     properties:
       created_at:
@@ -116,6 +415,59 @@ definitions:
         allOf:
         - $ref: '#/definitions/models.User'
         description: Relationship
+      user_id:
+        type: integer
+    type: object
+  models.PhysioProfile:
+    properties:
+      affiliations:
+        description: Professional affiliations
+        type: string
+      availability:
+        description: Availability & Pricing
+        type: string
+      certifications:
+        description: JSON string of certifications
+        type: string
+      created_at:
+        type: string
+      education:
+        description: Professional Details
+        type: string
+      equipment:
+        description: JSON string of available equipment
+        type: string
+      experience:
+        description: years of experience
+        type: integer
+      id:
+        type: integer
+      insurance_accepted:
+        description: JSON string of accepted insurance
+        type: string
+      is_profile_complete:
+        description: Profile Completion
+        type: boolean
+      languages:
+        description: JSON string of spoken languages
+        type: string
+      license_number:
+        description: Professional Information
+        type: string
+      session_rates:
+        description: JSON string of pricing
+        type: string
+      specializations:
+        description: JSON string of specializations
+        type: string
+      techniques:
+        description: JSON string of treatment techniques
+        type: string
+      treatment_areas:
+        description: Medical Focus Areas
+        type: string
+      updated_at:
+        type: string
       user_id:
         type: integer
     type: object
@@ -186,6 +538,68 @@ definitions:
       workout_completion:
         description: JSON string of completed workouts
         type: string
+    type: object
+  models.TrainerProfile:
+    properties:
+      availability:
+        description: Availability & Pricing
+        type: string
+      awards:
+        description: Professional awards/recognition
+        type: string
+      before_after_photos:
+        description: JSON string of transformation photos
+        type: string
+      bio:
+        description: About me section
+        type: string
+      certifications:
+        description: Professional Information
+        type: string
+      created_at:
+        type: string
+      education:
+        description: Educational background
+        type: string
+      experience:
+        description: years of experience
+        type: integer
+      id:
+        type: integer
+      is_profile_complete:
+        description: Profile Completion
+        type: boolean
+      languages:
+        description: Professional Details
+        type: string
+      package_rates:
+        description: JSON string of package pricing
+        type: string
+      philosophy:
+        description: Training philosophy
+        type: string
+      portfolio_images:
+        description: Portfolio
+        type: string
+      preferred_contact_method:
+        description: Contact & Communication
+        type: string
+      response_time:
+        description: typical response time
+        type: string
+      session_rates:
+        description: JSON string of pricing
+        type: string
+      specializations:
+        description: JSON string of specializations
+        type: string
+      testimonials:
+        description: JSON string of client testimonials
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
     type: object
   models.User:
     properties:
@@ -315,6 +729,69 @@ definitions:
         description: JSON string of days
         type: string
     type: object
+  plan.PlanRequest:
+    properties:
+      description:
+        type: string
+      duration:
+        description: in days, minimum 1 day
+        minimum: 1
+        type: integer
+      goal_type:
+        description: lose_weight, gain_muscle, flexibility, rehab
+        type: string
+      name:
+        type: string
+      plan_type:
+        description: fitness, diet, physio
+        type: string
+    required:
+    - goal_type
+    - name
+    - plan_type
+    type: object
+  plan.PlanResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      duration:
+        type: integer
+      goal_type:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      name:
+        type: string
+      plan_type:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  plan.UserPlanResponse:
+    properties:
+      assigned_at:
+        type: string
+      completed_at:
+        type: string
+      id:
+        type: integer
+      plan:
+        $ref: '#/definitions/plan.PlanResponse'
+      plan_id:
+        type: integer
+      progress:
+        description: 0-100
+        type: number
+      status:
+        description: active, completed, paused
+        type: string
+      user_id:
+        type: integer
+    type: object
   profile.ProfileResponse:
     properties:
       completion_percentage:
@@ -404,6 +881,131 @@ definitions:
     - weight
     - workout_days
     type: object
+  profile.RoleProfileResponse:
+    properties:
+      admin_profile:
+        $ref: '#/definitions/models.AdminProfile'
+      completion_percentage:
+        type: number
+      is_profile_complete:
+        type: boolean
+      member_profile:
+        allOf:
+        - $ref: '#/definitions/models.UserProfile'
+        description: Role-specific data
+      physio_profile:
+        $ref: '#/definitions/models.PhysioProfile'
+      role:
+        type: string
+      trainer_profile:
+        $ref: '#/definitions/models.TrainerProfile'
+      user_id:
+        type: integer
+    type: object
+  profile.RoleProfileSetupRequest:
+    properties:
+      access_level:
+        type: string
+      admin_role:
+        description: Admin-specific fields
+        type: string
+      affiliations:
+        type: string
+      age:
+        type: integer
+      allergies:
+        type: string
+      availability:
+        type: string
+      awards:
+        type: string
+      before_after_photos:
+        type: string
+      bio:
+        type: string
+      body_fat_percentage:
+        type: number
+      body_measurements:
+        type: string
+      certifications:
+        description: Trainer-specific fields
+        type: string
+      communication_preference:
+        type: string
+      department:
+        type: string
+      education:
+        type: string
+      emergency_contact:
+        type: string
+      emergency_phone:
+        type: string
+      equipment:
+        type: string
+      experience:
+        type: integer
+      gender:
+        type: string
+      goals:
+        type: string
+      height:
+        description: Member-specific fields
+        type: number
+      insurance_accepted:
+        type: string
+      languages:
+        type: string
+      license_number:
+        description: Physio-specific fields
+        type: string
+      medical_history:
+        type: string
+      medications:
+        type: string
+      muscle_mass:
+        type: number
+      office_location:
+        type: string
+      package_rates:
+        type: string
+      permissions:
+        type: string
+      philosophy:
+        type: string
+      phone:
+        description: Common fields for all roles
+        type: string
+      physio_needs:
+        type: string
+      portfolio_images:
+        type: string
+      preferred_contact_method:
+        type: string
+      preferred_workout_time:
+        type: string
+      response_time:
+        type: string
+      session_rates:
+        type: string
+      specializations:
+        type: string
+      target_weight:
+        type: number
+      techniques:
+        type: string
+      testimonials:
+        type: string
+      timeline:
+        type: integer
+      treatment_areas:
+        type: string
+      weight:
+        type: number
+      workout_days:
+        type: string
+    required:
+    - phone
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -482,6 +1084,113 @@ paths:
       summary: Register a new user
       tags:
       - Auth
+  /dashboard:
+    get:
+      consumes:
+      - application/json
+      description: Get personalized dashboard data based on user role
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dashboard.DashboardResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user dashboard
+      tags:
+      - Dashboard
+  /dashboard/notifications:
+    get:
+      consumes:
+      - application/json
+      description: Get user notifications
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dashboard.Notification'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user notifications
+      tags:
+      - Dashboard
+  /dashboard/quick-actions:
+    get:
+      consumes:
+      - application/json
+      description: Get available quick actions based on user role and profile completion
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dashboard.QuickAction'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get quick actions
+      tags:
+      - Dashboard
+  /dashboard/stats:
+    get:
+      consumes:
+      - application/json
+      description: Get general dashboard statistics
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dashboard.DashboardStats'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get dashboard statistics
+      tags:
+      - Dashboard
   /health:
     get:
       consumes:
@@ -498,6 +1207,283 @@ paths:
       summary: Health Check
       tags:
       - Health
+  /plans:
+    get:
+      consumes:
+      - application/json
+      description: Get all plan templates with optional filtering
+      parameters:
+      - description: Filter by goal type
+        in: query
+        name: goal_type
+        type: string
+      - description: Filter by plan type
+        in: query
+        name: plan_type
+        type: string
+      - description: Filter by active status
+        in: query
+        name: is_active
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/plan.PlanResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all plans
+      tags:
+      - Plans
+    post:
+      consumes:
+      - application/json
+      description: Create a new fitness plan template (Admin/Trainer only)
+      parameters:
+      - description: Plan details
+        in: body
+        name: plan
+        required: true
+        schema:
+          $ref: '#/definitions/plan.PlanRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/plan.PlanResponse'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden - Admin/Trainer only
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new plan template
+      tags:
+      - Plans
+  /plans/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific plan template by ID
+      parameters:
+      - description: Plan ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/plan.PlanResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Plan not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get a specific plan
+      tags:
+      - Plans
+  /plans/assign:
+    post:
+      consumes:
+      - application/json
+      description: Assign a plan template to a specific user (Trainer/Admin only)
+      parameters:
+      - description: Assignment details
+        in: body
+        name: assignment
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/plan.UserPlanResponse'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden - Trainer/Admin only
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Assign a plan to a user
+      tags:
+      - Plans
+  /plans/assigned:
+    get:
+      consumes:
+      - application/json
+      description: Get all plans assigned by the current trainer/admin (Trainer/Admin
+        only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/plan.UserPlanResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden - Trainer/Admin only
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get plans assigned by trainer/admin
+      tags:
+      - Plans
+  /plans/available:
+    get:
+      consumes:
+      - application/json
+      description: Get all active plan templates that members can browse and select
+      parameters:
+      - description: Filter by goal type
+        in: query
+        name: goal_type
+        type: string
+      - description: Filter by plan type
+        in: query
+        name: plan_type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/plan.PlanResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get available plans for members
+      tags:
+      - Plans
+  /plans/my-plans:
+    get:
+      consumes:
+      - application/json
+      description: Get all plans assigned to the current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/plan.UserPlanResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user's assigned plans
+      tags:
+      - Plans
+  /plans/request:
+    post:
+      consumes:
+      - application/json
+      description: Request to be assigned a specific plan (Members can request, but
+        admin/trainer must approve)
+      parameters:
+      - description: Plan request details
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Request submitted
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden - Members only
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Request plan assignment (Member only)
+      tags:
+      - Plans
   /users/profile:
     get:
       consumes:
@@ -576,6 +1562,50 @@ paths:
       summary: Check profile completion
       tags:
       - Profile
+  /users/profile/role:
+    get:
+      consumes:
+      - application/json
+      description: Get the current user's role-specific profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/profile.RoleProfileResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get role-based profile
+      tags:
+      - Profile
+  /users/profile/role/completion:
+    get:
+      consumes:
+      - application/json
+      description: Check profile completion percentage based on user role
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/profile.RoleProfileResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Check role-based profile completion
+      tags:
+      - Profile
   /users/profile/setup:
     post:
       consumes:
@@ -608,6 +1638,41 @@ paths:
       security:
       - BearerAuth: []
       summary: Setup user profile
+      tags:
+      - Profile
+  /users/profile/setup-role:
+    post:
+      consumes:
+      - application/json
+      description: Complete profile setup based on user role (member, trainer, admin,
+        physio)
+      parameters:
+      - description: Role-based profile setup data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/profile.RoleProfileSetupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/profile.RoleProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Setup role-based profile
       tags:
       - Profile
   /users/profile/upload-image:

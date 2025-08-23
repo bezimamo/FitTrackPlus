@@ -114,6 +114,173 @@
                 }
             }
         },
+        "/dashboard": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get personalized dashboard data based on user role",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Get user dashboard",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dashboard.DashboardResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/dashboard/notifications": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get user notifications",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Get user notifications",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dashboard.Notification"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/dashboard/quick-actions": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get available quick actions based on user role and profile completion",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Get quick actions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dashboard.QuickAction"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/dashboard/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get general dashboard statistics",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Get dashboard statistics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dashboard.DashboardStats"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "description": "Check if the API server is running",
@@ -130,6 +297,431 @@
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/plans": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all plan templates with optional filtering",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plans"
+                ],
+                "summary": "Get all plans",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by goal type",
+                        "name": "goal_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by plan type",
+                        "name": "plan_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by active status",
+                        "name": "is_active",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/plan.PlanResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new fitness plan template (Admin/Trainer only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plans"
+                ],
+                "summary": "Create a new plan template",
+                "parameters": [
+                    {
+                        "description": "Plan details",
+                        "name": "plan",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/plan.PlanRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/plan.PlanResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Admin/Trainer only",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/plans/assign": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Assign a plan template to a specific user (Trainer/Admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plans"
+                ],
+                "summary": "Assign a plan to a user",
+                "parameters": [
+                    {
+                        "description": "Assignment details",
+                        "name": "assignment",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/plan.UserPlanResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Trainer/Admin only",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/plans/assigned": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all plans assigned by the current trainer/admin (Trainer/Admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plans"
+                ],
+                "summary": "Get plans assigned by trainer/admin",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/plan.UserPlanResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Trainer/Admin only",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/plans/available": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all active plan templates that members can browse and select",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plans"
+                ],
+                "summary": "Get available plans for members",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by goal type",
+                        "name": "goal_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by plan type",
+                        "name": "plan_type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/plan.PlanResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/plans/my-plans": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all plans assigned to the current user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plans"
+                ],
+                "summary": "Get user's assigned plans",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/plan.UserPlanResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/plans/request": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Request to be assigned a specific plan (Members can request, but admin/trainer must approve)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plans"
+                ],
+                "summary": "Request plan assignment (Member only)",
+                "parameters": [
+                    {
+                        "description": "Plan request details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Request submitted",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Members only",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/plans/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a specific plan template by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plans"
+                ],
+                "summary": "Get a specific plan",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Plan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/plan.PlanResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Plan not found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -260,6 +852,76 @@
                 }
             }
         },
+        "/users/profile/role": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get the current user's role-specific profile",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Get role-based profile",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/profile.RoleProfileResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/users/profile/role/completion": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Check profile completion percentage based on user role",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Check role-based profile completion",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/profile.RoleProfileResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/users/profile/setup": {
             "post": {
                 "security": [
@@ -294,6 +956,59 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/profile.ProfileResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/users/profile/setup-role": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Complete profile setup based on user role (member, trainer, admin, physio)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Setup role-based profile",
+                "parameters": [
+                    {
+                        "description": "Role-based profile setup data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/profile.RoleProfileSetupRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/profile.RoleProfileResponse"
                         }
                     },
                     "400": {
@@ -450,6 +1165,458 @@
                 }
             }
         },
+        "dashboard.AdminDashboardData": {
+            "type": "object",
+            "properties": {
+                "recent_signups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dashboard.UserInfo"
+                    }
+                },
+                "revenue_stats": {
+                    "$ref": "#/definitions/dashboard.RevenueStats"
+                },
+                "system_health": {
+                    "$ref": "#/definitions/dashboard.SystemHealth"
+                },
+                "user_stats": {
+                    "$ref": "#/definitions/dashboard.UserStats"
+                }
+            }
+        },
+        "dashboard.ClientProgress": {
+            "type": "object",
+            "properties": {
+                "client_id": {
+                    "type": "integer"
+                },
+                "client_name": {
+                    "type": "string"
+                },
+                "last_session": {
+                    "type": "string"
+                },
+                "plan_name": {
+                    "type": "string"
+                },
+                "progress": {
+                    "type": "number"
+                }
+            }
+        },
+        "dashboard.DashboardResponse": {
+            "type": "object",
+            "properties": {
+                "admin_data": {
+                    "$ref": "#/definitions/dashboard.AdminDashboardData"
+                },
+                "member_data": {
+                    "description": "Role-specific data",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dashboard.MemberDashboardData"
+                        }
+                    ]
+                },
+                "notifications": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dashboard.Notification"
+                    }
+                },
+                "quick_actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dashboard.QuickAction"
+                    }
+                },
+                "recent_activity": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dashboard.RecentActivity"
+                    }
+                },
+                "stats": {
+                    "$ref": "#/definitions/dashboard.DashboardStats"
+                },
+                "trainer_data": {
+                    "$ref": "#/definitions/dashboard.TrainerDashboardData"
+                },
+                "user_info": {
+                    "$ref": "#/definitions/dashboard.UserInfo"
+                },
+                "user_role": {
+                    "type": "string"
+                }
+            }
+        },
+        "dashboard.DashboardStats": {
+            "type": "object",
+            "properties": {
+                "active_plans": {
+                    "type": "integer"
+                },
+                "completion_rate": {
+                    "type": "number"
+                },
+                "total_sessions": {
+                    "type": "integer"
+                },
+                "total_users": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dashboard.GoalInfo": {
+            "type": "object",
+            "properties": {
+                "current": {
+                    "type": "number"
+                },
+                "deadline": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "progress": {
+                    "type": "number"
+                },
+                "target": {
+                    "type": "number"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "dashboard.MemberDashboardData": {
+            "type": "object",
+            "properties": {
+                "current_plan": {
+                    "$ref": "#/definitions/dashboard.PlanSummary"
+                },
+                "goals": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dashboard.GoalInfo"
+                    }
+                },
+                "progress_summary": {
+                    "$ref": "#/definitions/dashboard.ProgressSummary"
+                },
+                "upcoming_sessions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dashboard.SessionInfo"
+                    }
+                }
+            }
+        },
+        "dashboard.Notification": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_read": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "\"info\", \"warning\", \"success\", \"error\"",
+                    "type": "string"
+                }
+            }
+        },
+        "dashboard.PlanSummary": {
+            "type": "object",
+            "properties": {
+                "end_date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "progress": {
+                    "description": "0-100",
+                    "type": "number"
+                },
+                "start_date": {
+                    "type": "string"
+                },
+                "status": {
+                    "description": "\"active\", \"completed\", \"paused\"",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "\"workout\", \"diet\", \"mixed\"",
+                    "type": "string"
+                }
+            }
+        },
+        "dashboard.ProgressSummary": {
+            "type": "object",
+            "properties": {
+                "body_fat_reduction": {
+                    "type": "number"
+                },
+                "current_weight": {
+                    "type": "number"
+                },
+                "muscle_gain": {
+                    "type": "number"
+                },
+                "overall_progress": {
+                    "type": "number"
+                },
+                "target_weight": {
+                    "type": "number"
+                },
+                "weight_lost": {
+                    "type": "number"
+                }
+            }
+        },
+        "dashboard.QuickAction": {
+            "type": "object",
+            "properties": {
+                "color": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "dashboard.RecentActivity": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "type": {
+                    "description": "\"login\", \"profile_update\", \"plan_assigned\", etc.",
+                    "type": "string"
+                }
+            }
+        },
+        "dashboard.RevenueStats": {
+            "type": "object",
+            "properties": {
+                "active_subscriptions": {
+                    "type": "integer"
+                },
+                "monthly_revenue": {
+                    "type": "number"
+                },
+                "pending_payments": {
+                    "type": "integer"
+                },
+                "total_revenue": {
+                    "type": "number"
+                }
+            }
+        },
+        "dashboard.SessionInfo": {
+            "type": "object",
+            "properties": {
+                "client_name": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "duration": {
+                    "description": "minutes",
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "\"scheduled\", \"completed\", \"cancelled\"",
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "trainer_name": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "\"workout\", \"consultation\", \"assessment\"",
+                    "type": "string"
+                }
+            }
+        },
+        "dashboard.SystemHealth": {
+            "type": "object",
+            "properties": {
+                "api_server_status": {
+                    "type": "string"
+                },
+                "database_status": {
+                    "type": "string"
+                },
+                "last_backup": {
+                    "type": "string"
+                },
+                "uptime": {
+                    "type": "string"
+                }
+            }
+        },
+        "dashboard.TrainerDashboardData": {
+            "type": "object",
+            "properties": {
+                "active_clients": {
+                    "type": "integer"
+                },
+                "client_progress": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dashboard.ClientProgress"
+                    }
+                },
+                "today_sessions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dashboard.SessionInfo"
+                    }
+                },
+                "total_clients": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dashboard.UserInfo": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "dashboard.UserStats": {
+            "type": "object",
+            "properties": {
+                "active_users": {
+                    "type": "integer"
+                },
+                "new_this_month": {
+                    "type": "integer"
+                },
+                "total_members": {
+                    "type": "integer"
+                },
+                "total_trainers": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.AdminProfile": {
+            "type": "object",
+            "properties": {
+                "access_level": {
+                    "description": "full_access, limited_access, read_only",
+                    "type": "string"
+                },
+                "admin_role": {
+                    "description": "Administrative Information",
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "department": {
+                    "description": "IT, Management, Operations",
+                    "type": "string"
+                },
+                "emergency_contact": {
+                    "description": "Contact Information",
+                    "type": "string"
+                },
+                "emergency_phone": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_profile_complete": {
+                    "description": "Profile Completion",
+                    "type": "boolean"
+                },
+                "last_login": {
+                    "type": "string"
+                },
+                "login_history": {
+                    "description": "JSON string of recent logins",
+                    "type": "string"
+                },
+                "office_location": {
+                    "type": "string"
+                },
+                "permissions": {
+                    "description": "Administrative Details",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.Booking": {
             "type": "object",
             "properties": {
@@ -538,6 +1705,79 @@
                             "$ref": "#/definitions/models.User"
                         }
                     ]
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.PhysioProfile": {
+            "type": "object",
+            "properties": {
+                "affiliations": {
+                    "description": "Professional affiliations",
+                    "type": "string"
+                },
+                "availability": {
+                    "description": "Availability \u0026 Pricing",
+                    "type": "string"
+                },
+                "certifications": {
+                    "description": "JSON string of certifications",
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "education": {
+                    "description": "Professional Details",
+                    "type": "string"
+                },
+                "equipment": {
+                    "description": "JSON string of available equipment",
+                    "type": "string"
+                },
+                "experience": {
+                    "description": "years of experience",
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "insurance_accepted": {
+                    "description": "JSON string of accepted insurance",
+                    "type": "string"
+                },
+                "is_profile_complete": {
+                    "description": "Profile Completion",
+                    "type": "boolean"
+                },
+                "languages": {
+                    "description": "JSON string of spoken languages",
+                    "type": "string"
+                },
+                "license_number": {
+                    "description": "Professional Information",
+                    "type": "string"
+                },
+                "session_rates": {
+                    "description": "JSON string of pricing",
+                    "type": "string"
+                },
+                "specializations": {
+                    "description": "JSON string of specializations",
+                    "type": "string"
+                },
+                "techniques": {
+                    "description": "JSON string of treatment techniques",
+                    "type": "string"
+                },
+                "treatment_areas": {
+                    "description": "Medical Focus Areas",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
                 },
                 "user_id": {
                     "type": "integer"
@@ -641,6 +1881,91 @@
                 "workout_completion": {
                     "description": "JSON string of completed workouts",
                     "type": "string"
+                }
+            }
+        },
+        "models.TrainerProfile": {
+            "type": "object",
+            "properties": {
+                "availability": {
+                    "description": "Availability \u0026 Pricing",
+                    "type": "string"
+                },
+                "awards": {
+                    "description": "Professional awards/recognition",
+                    "type": "string"
+                },
+                "before_after_photos": {
+                    "description": "JSON string of transformation photos",
+                    "type": "string"
+                },
+                "bio": {
+                    "description": "About me section",
+                    "type": "string"
+                },
+                "certifications": {
+                    "description": "Professional Information",
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "education": {
+                    "description": "Educational background",
+                    "type": "string"
+                },
+                "experience": {
+                    "description": "years of experience",
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_profile_complete": {
+                    "description": "Profile Completion",
+                    "type": "boolean"
+                },
+                "languages": {
+                    "description": "Professional Details",
+                    "type": "string"
+                },
+                "package_rates": {
+                    "description": "JSON string of package pricing",
+                    "type": "string"
+                },
+                "philosophy": {
+                    "description": "Training philosophy",
+                    "type": "string"
+                },
+                "portfolio_images": {
+                    "description": "Portfolio",
+                    "type": "string"
+                },
+                "preferred_contact_method": {
+                    "description": "Contact \u0026 Communication",
+                    "type": "string"
+                },
+                "response_time": {
+                    "description": "typical response time",
+                    "type": "string"
+                },
+                "session_rates": {
+                    "description": "JSON string of pricing",
+                    "type": "string"
+                },
+                "specializations": {
+                    "description": "JSON string of specializations",
+                    "type": "string"
+                },
+                "testimonials": {
+                    "description": "JSON string of client testimonials",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -835,6 +2160,98 @@
                 }
             }
         },
+        "plan.PlanRequest": {
+            "type": "object",
+            "required": [
+                "goal_type",
+                "name",
+                "plan_type"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "duration": {
+                    "description": "in days, minimum 1 day",
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "goal_type": {
+                    "description": "lose_weight, gain_muscle, flexibility, rehab",
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "plan_type": {
+                    "description": "fitness, diet, physio",
+                    "type": "string"
+                }
+            }
+        },
+        "plan.PlanResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "duration": {
+                    "type": "integer"
+                },
+                "goal_type": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "plan_type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "plan.UserPlanResponse": {
+            "type": "object",
+            "properties": {
+                "assigned_at": {
+                    "type": "string"
+                },
+                "completed_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "plan": {
+                    "$ref": "#/definitions/plan.PlanResponse"
+                },
+                "plan_id": {
+                    "type": "integer"
+                },
+                "progress": {
+                    "description": "0-100",
+                    "type": "number"
+                },
+                "status": {
+                    "description": "active, completed, paused",
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "profile.ProfileResponse": {
             "type": "object",
             "properties": {
@@ -951,6 +2368,194 @@
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "profile.RoleProfileResponse": {
+            "type": "object",
+            "properties": {
+                "admin_profile": {
+                    "$ref": "#/definitions/models.AdminProfile"
+                },
+                "completion_percentage": {
+                    "type": "number"
+                },
+                "is_profile_complete": {
+                    "type": "boolean"
+                },
+                "member_profile": {
+                    "description": "Role-specific data",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.UserProfile"
+                        }
+                    ]
+                },
+                "physio_profile": {
+                    "$ref": "#/definitions/models.PhysioProfile"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "trainer_profile": {
+                    "$ref": "#/definitions/models.TrainerProfile"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "profile.RoleProfileSetupRequest": {
+            "type": "object",
+            "required": [
+                "phone"
+            ],
+            "properties": {
+                "access_level": {
+                    "type": "string"
+                },
+                "admin_role": {
+                    "description": "Admin-specific fields",
+                    "type": "string"
+                },
+                "affiliations": {
+                    "type": "string"
+                },
+                "age": {
+                    "type": "integer"
+                },
+                "allergies": {
+                    "type": "string"
+                },
+                "availability": {
+                    "type": "string"
+                },
+                "awards": {
+                    "type": "string"
+                },
+                "before_after_photos": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "body_fat_percentage": {
+                    "type": "number"
+                },
+                "body_measurements": {
+                    "type": "string"
+                },
+                "certifications": {
+                    "description": "Trainer-specific fields",
+                    "type": "string"
+                },
+                "communication_preference": {
+                    "type": "string"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "education": {
+                    "type": "string"
+                },
+                "emergency_contact": {
+                    "type": "string"
+                },
+                "emergency_phone": {
+                    "type": "string"
+                },
+                "equipment": {
+                    "type": "string"
+                },
+                "experience": {
+                    "type": "integer"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "goals": {
+                    "type": "string"
+                },
+                "height": {
+                    "description": "Member-specific fields",
+                    "type": "number"
+                },
+                "insurance_accepted": {
+                    "type": "string"
+                },
+                "languages": {
+                    "type": "string"
+                },
+                "license_number": {
+                    "description": "Physio-specific fields",
+                    "type": "string"
+                },
+                "medical_history": {
+                    "type": "string"
+                },
+                "medications": {
+                    "type": "string"
+                },
+                "muscle_mass": {
+                    "type": "number"
+                },
+                "office_location": {
+                    "type": "string"
+                },
+                "package_rates": {
+                    "type": "string"
+                },
+                "permissions": {
+                    "type": "string"
+                },
+                "philosophy": {
+                    "type": "string"
+                },
+                "phone": {
+                    "description": "Common fields for all roles",
+                    "type": "string"
+                },
+                "physio_needs": {
+                    "type": "string"
+                },
+                "portfolio_images": {
+                    "type": "string"
+                },
+                "preferred_contact_method": {
+                    "type": "string"
+                },
+                "preferred_workout_time": {
+                    "type": "string"
+                },
+                "response_time": {
+                    "type": "string"
+                },
+                "session_rates": {
+                    "type": "string"
+                },
+                "specializations": {
+                    "type": "string"
+                },
+                "target_weight": {
+                    "type": "number"
+                },
+                "techniques": {
+                    "type": "string"
+                },
+                "testimonials": {
+                    "type": "string"
+                },
+                "timeline": {
+                    "type": "integer"
+                },
+                "treatment_areas": {
+                    "type": "string"
+                },
+                "weight": {
+                    "type": "number"
+                },
+                "workout_days": {
+                    "type": "string"
                 }
             }
         }

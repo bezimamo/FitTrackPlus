@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -15,9 +16,14 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 	authService := NewAuthService(cfg)
 
 	return func(c *gin.Context) {
+		fmt.Printf("🔐 Auth middleware called for: %s %s\n", c.Request.Method, c.Request.URL.Path)
+		
 		// Get the Authorization header
 		authHeader := c.GetHeader("Authorization")
+		fmt.Printf("📋 Authorization header: '%s'\n", authHeader)
+		
 		if authHeader == "" {
+			fmt.Println("❌ No Authorization header found")
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"error": "Authorization header is required",
 			})
@@ -27,6 +33,7 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 
 		// Check if the header starts with "Bearer "
 		if !strings.HasPrefix(authHeader, "Bearer ") {
+			fmt.Printf("❌ Authorization header doesn't start with 'Bearer ': '%s'\n", authHeader)
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"error": "Authorization header must start with 'Bearer '",
 			})
@@ -36,10 +43,12 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 
 		// Extract the token (remove "Bearer " prefix)
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		fmt.Printf("🔑 Token extracted: %s...\n", tokenString[:min(len(tokenString), 20)])
 
 		// Validate the token
 		claims, err := authService.ValidateToken(tokenString)
 		if err != nil {
+			fmt.Printf("❌ Token validation failed: %v\n", err)
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"error": "Invalid or expired token",
 			})
@@ -47,9 +56,12 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 			return
 		}
 
+		fmt.Printf("✅ Token validated for user ID: %d, role: %s\n", claims.UserID, claims.Role)
+
 		// Get the user from database
 		user, err := authService.GetUserByID(claims.UserID)
 		if err != nil {
+			fmt.Printf("❌ User not found: %v\n", err)
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"error": "User not found",
 			})
@@ -59,6 +71,7 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 
 		// Check if user is active
 		if !user.IsActive {
+			fmt.Printf("❌ User account deactivated: %d\n", claims.UserID)
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"error": "Account is deactivated",
 			})
@@ -71,6 +84,7 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 		c.Set("user_id", claims.UserID)
 		c.Set("user_role", claims.Role)
 
+		fmt.Printf("✅ Authentication successful for user: %s (%s)\n", user.Email, user.Role)
 		c.Next()
 	}
 }
@@ -125,4 +139,21 @@ func GetCurrentUserID(c *gin.Context) (uint, bool) {
 		return 0, false
 	}
 	return userID.(uint), true
+}
+
+// GetCurrentUserRole extracts the current user role from the context
+func GetCurrentUserRole(c *gin.Context) (string, bool) {
+	userRole, exists := c.Get("user_role")
+	if !exists {
+		return "", false
+	}
+	return userRole.(string), true
+} 
+
+// Helper function to get minimum of two integers
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 } 

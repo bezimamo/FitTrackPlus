@@ -9,6 +9,8 @@ import (
 	"fittrackplus/internal/auth"
 	"fittrackplus/internal/common/config"
 	"fittrackplus/internal/common/database"
+	"fittrackplus/internal/dashboard"
+	"fittrackplus/internal/plan"
 	"fittrackplus/internal/profile"
 	_ "fittrackplus/docs" // This is required for swagger
 
@@ -98,6 +100,15 @@ func setupRoutes(router *gin.Engine, cfg *config.Config) {
 	// Create handlers
 	authHandler := auth.NewAuthHandler(cfg)
 	profileHandler := profile.NewProfileHandler(cfg)
+	dashboardHandler := dashboard.NewDashboardHandler(cfg)
+	planHandler := plan.NewPlanHandler(cfg)
+
+	// Debug: Check if handlers are created successfully
+	fmt.Println("🔧 Handlers initialized:")
+	fmt.Println("   - AuthHandler:", authHandler != nil)
+	fmt.Println("   - ProfileHandler:", profileHandler != nil)
+	fmt.Println("   - DashboardHandler:", dashboardHandler != nil)
+	fmt.Println("   - PlanHandler:", planHandler != nil)
 
 	// API version 1 group
 	api := router.Group("/api/v1")
@@ -126,9 +137,54 @@ func setupRoutes(router *gin.Engine, cfg *config.Config) {
 				profileGroup.GET("", profileHandler.GetProfile)
 				profileGroup.POST("/upload-image", profileHandler.UploadProfileImage)
 				profileGroup.GET("/completion", profileHandler.CheckProfileCompletion)
+				
+				// Role-based profile management
+				profileGroup.POST("/setup-role", profileHandler.SetupRoleProfile)
+				profileGroup.GET("/role", profileHandler.GetRoleProfile)
+				profileGroup.GET("/role/completion", profileHandler.CheckRoleProfileCompletion)
 			}
 		}
+
+		// Dashboard routes (protected - authentication required)
+		dashboardGroup := api.Group("/dashboard")
+		dashboardGroup.Use(auth.AuthMiddleware(cfg)) // Apply authentication middleware
+		{
+			// General dashboard (automatically role-based)
+			dashboardGroup.GET("", dashboardHandler.GetDashboard)
+			
+			// Dashboard components
+			dashboardGroup.GET("/stats", dashboardHandler.GetDashboardStats)
+			dashboardGroup.GET("/quick-actions", dashboardHandler.GetQuickActions)
+			dashboardGroup.GET("/notifications", dashboardHandler.GetNotifications)
+		}
+
+		// Plan routes (protected - authentication required)
+		planGroup := api.Group("/plans")
+		planGroup.Use(auth.AuthMiddleware(cfg)) // Apply authentication middleware
+		{
+			// Plan management (Admin/Trainer only)
+			planGroup.POST("", planHandler.CreatePlan)
+			planGroup.GET("", planHandler.GetPlans)
+			planGroup.GET("/:id", planHandler.GetPlan)
+			
+			// Plan assignment (Admin/Trainer only)
+			planGroup.POST("/assign", planHandler.AssignPlan)
+			
+			// User plan access
+			planGroup.GET("/my-plans", planHandler.GetUserPlans)
+			planGroup.GET("/assigned", planHandler.GetAssignedPlans)
+			
+			// Member plan selection
+			planGroup.GET("/available", planHandler.GetAvailablePlans)
+			planGroup.POST("/request", planHandler.RequestPlanAssignment)
+		}
 	}
+
+	fmt.Println("✅ Routes configured successfully")
+	fmt.Println("   - Auth routes: /api/v1/auth/*")
+	fmt.Println("   - User routes: /api/v1/users/*")
+	fmt.Println("   - Dashboard routes: /api/v1/dashboard/*")
+	fmt.Println("   - Plan routes: /api/v1/plans/*")
 
 	// Serve Swagger documentation
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -151,6 +207,28 @@ func setupRoutes(router *gin.Engine, cfg *config.Config) {
 					"profile_setup": "POST /api/v1/users/profile/setup",
 					"profile_image": "POST /api/v1/users/profile/upload-image",
 					"profile_completion": "GET /api/v1/users/profile/completion",
+					"role_profile_setup": "POST /api/v1/users/profile/setup-role",
+					"role_profile": "GET /api/v1/users/profile/role",
+					"role_profile_completion": "GET /api/v1/users/profile/role/completion",
+				},
+				"dashboard": gin.H{
+					"general": "GET /api/v1/dashboard",
+					"member": "GET /api/v1/dashboard/member",
+					"trainer": "GET /api/v1/dashboard/trainer",
+					"admin": "GET /api/v1/dashboard/admin",
+					"stats": "GET /api/v1/dashboard/stats",
+					"quick_actions": "GET /api/v1/dashboard/quick-actions",
+					"notifications": "GET /api/v1/dashboard/notifications",
+				},
+				"plans": gin.H{
+					"create": "POST /api/v1/plans",
+					"list": "GET /api/v1/plans",
+					"get": "GET /api/v1/plans/{id}",
+					"assign": "POST /api/v1/plans/assign",
+					"my_plans": "GET /api/v1/plans/my-plans",
+					"assigned": "GET /api/v1/plans/assigned",
+					"available": "GET /api/v1/plans/available",
+					"request": "POST /api/v1/plans/request",
 				},
 			},
 		})

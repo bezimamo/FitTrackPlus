@@ -11,13 +11,15 @@ import (
 
 // ProfileHandler handles HTTP requests for profile management
 type ProfileHandler struct {
-	profileService *ProfileService
+	profileService     *ProfileService
+	roleProfileService *RoleProfileService
 }
 
 // NewProfileHandler creates a new profile handler
 func NewProfileHandler(cfg *config.Config) *ProfileHandler {
 	return &ProfileHandler{
-		profileService: NewProfileService(cfg),
+		profileService:     NewProfileService(cfg),
+		roleProfileService: NewRoleProfileService(cfg),
 	}
 }
 
@@ -59,6 +61,142 @@ func (h *ProfileHandler) SetupProfile(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to setup profile",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+// SetupRoleProfile handles role-based profile setup
+// @Summary Setup role-based profile
+// @Description Complete profile setup based on user role (member, trainer, admin, physio)
+// @Tags Profile
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body RoleProfileSetupRequest true "Role-based profile setup data"
+// @Success 200 {object} RoleProfileResponse
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Router /users/profile/setup-role [post]
+func (h *ProfileHandler) SetupRoleProfile(c *gin.Context) {
+	var req RoleProfileSetupRequest
+
+	// Bind and validate request
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request data",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Get current user info from context
+	userID, exists := auth.GetCurrentUserID(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "User ID not found in context",
+		})
+		return
+	}
+
+	userRole, exists := auth.GetCurrentUserRole(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "User role not found in context",
+		})
+		return
+	}
+
+	// Setup the role-based profile
+	response, err := h.roleProfileService.SetupRoleProfile(userID, userRole, &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to setup role-based profile",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+// GetRoleProfile handles role-based profile retrieval
+// @Summary Get role-based profile
+// @Description Get the current user's role-specific profile
+// @Tags Profile
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} RoleProfileResponse
+// @Failure 401 {object} map[string]interface{}
+// @Router /users/profile/role [get]
+func (h *ProfileHandler) GetRoleProfile(c *gin.Context) {
+	// Get current user info from context
+	userID, exists := auth.GetCurrentUserID(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "User ID not found in context",
+		})
+		return
+	}
+
+	userRole, exists := auth.GetCurrentUserRole(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "User role not found in context",
+		})
+		return
+	}
+
+	// Get the role-based profile
+	response, err := h.roleProfileService.GetRoleProfile(userID, userRole)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get role-based profile",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+// CheckRoleProfileCompletion handles role-based profile completion check
+// @Summary Check role-based profile completion
+// @Description Check profile completion percentage based on user role
+// @Tags Profile
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} RoleProfileResponse
+// @Failure 401 {object} map[string]interface{}
+// @Router /users/profile/role/completion [get]
+func (h *ProfileHandler) CheckRoleProfileCompletion(c *gin.Context) {
+	// Get current user info from context
+	userID, exists := auth.GetCurrentUserID(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "User ID not found in context",
+		})
+		return
+	}
+
+	userRole, exists := auth.GetCurrentUserRole(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "User role not found in context",
+		})
+		return
+	}
+
+	// Check the role-based profile completion
+	response, err := h.roleProfileService.CheckProfileCompletion(userID, userRole)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to check role-based profile completion",
 			"details": err.Error(),
 		})
 		return
