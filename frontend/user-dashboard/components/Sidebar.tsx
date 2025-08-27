@@ -6,12 +6,12 @@ import { FaHome, FaDumbbell, FaChartLine, FaCalendarAlt, FaUser } from "react-ic
 
 export default function Sidebar() {
   return (
-    <aside className="w-64 bg-gradient-to-b from-blue-600 to-blue-400 text-white flex flex-col p-6 min-h-screen">
+    <aside className="fixed top-0 left-0 w-64 h-screen bg-gradient-to-b from-blue-600 to-blue-400 text-white flex flex-col p-6 shadow-lg">
       {/* Sidebar Header */}
       <h2 className="text-2xl font-bold mb-8">Dashboard</h2>
 
       {/* Navigation Links */}
-      <nav className="flex flex-col gap-4">
+      <nav className="flex flex-col gap-4 overflow-y-auto">
         <Link
           href="/overview"
           className="flex items-center gap-3 py-2 px-4 rounded hover:bg-white hover:text-blue-600 transition"

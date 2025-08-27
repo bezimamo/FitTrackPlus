@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import apiFetch from "@/lib/api";
 import { UserProfileResponse } from "@/lib/types/profile";
+import Sidebar from "@/components/Sidebar";
 import ProfileHeader from "@/components/dashboard/profile/ProfileHeader";
 import ProfileDetails from "@/components/dashboard/profile/ProfileDetails";
 import ProfileCompletion from "@/components/dashboard/profile/ProfileCompletion";
@@ -40,21 +41,31 @@ export default function ProfilePage() {
   const { profile, completion_percentage, is_complete } = profileData;
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
-      <ProfileHeader
-        name={`User #${profile.user_id}`}
-        profileImage={profile.profile_image_url}
-        isComplete={profile.is_profile_complete}
-      />
-
-      <ProfileCompletion completion={completion_percentage} isComplete={is_complete} />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ProfileDetails profile={profile} />
-        <BMICard height={profile.height} weight={profile.weight} />
+    <div className="flex">
+      {/* Sidebar fixed */}
+      <div className="w-64 flex-shrink-0">
+        <Sidebar />
       </div>
 
-      <RoleProfile profile={profile} />
+      {/* Scrollable Main Content */}
+      <main className="flex-1 overflow-auto h-screen p-6 bg-gray-50">
+        <div className="max-w-5xl mx-auto space-y-6">
+          <ProfileHeader
+            name={`User #${profile.user_id}`}
+            profileImage={profile.profile_image_url}
+            isComplete={profile.is_profile_complete}
+          />
+
+          <ProfileCompletion completion={completion_percentage} isComplete={is_complete} />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ProfileDetails profile={profile} />
+            <BMICard height={profile.height} weight={profile.weight} />
+          </div>
+
+          <RoleProfile profile={profile} />
+        </div>
+      </main>
     </div>
   );
 }
