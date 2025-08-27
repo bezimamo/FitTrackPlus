@@ -46,7 +46,7 @@ export default function LoginPage() {
 
       // 👇 NEW LOGIC
       if (!data.user?.hasProfile) {
-        router.push("/dashboard/profile"); // redirect if profile not complete
+        router.push("/profile"); // redirect if profile not complete
       } else {
         router.push(next || "/dashboard"); // otherwise to dashboard
       }

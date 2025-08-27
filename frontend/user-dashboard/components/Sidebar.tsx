@@ -13,31 +13,31 @@ export default function Sidebar() {
       {/* Navigation Links */}
       <nav className="flex flex-col gap-4">
         <Link
-          href="/dashboard/overview"
+          href="/overview"
           className="flex items-center gap-3 py-2 px-4 rounded hover:bg-white hover:text-blue-600 transition"
         >
           <FaHome /> Overview
         </Link>
         <Link
-          href="/dashboard/plans"
+          href="/plans"
           className="flex items-center gap-3 py-2 px-4 rounded hover:bg-white hover:text-blue-600 transition"
         >
           <FaDumbbell /> Plans
         </Link>
         <Link
-          href="/dashboard/progress"
+          href="/progress"
           className="flex items-center gap-3 py-2 px-4 rounded hover:bg-white hover:text-blue-600 transition"
         >
           <FaChartLine /> Progress
         </Link>
         <Link
-          href="/dashboard/bookings"
+          href="/bookings"
           className="flex items-center gap-3 py-2 px-4 rounded hover:bg-white hover:text-blue-600 transition"
         >
           <FaCalendarAlt /> Bookings
         </Link>
         <Link
-          href="/dashboard/profile"
+          href="/profile"
           className="flex items-center gap-3 py-2 px-4 rounded hover:bg-white hover:text-blue-600 transition"
         >
           <FaUser /> Profile

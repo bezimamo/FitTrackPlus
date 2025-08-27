@@ -17,6 +17,7 @@ export default function PlansPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Mock data for demo
     const mockPlans: Plan[] = [
       {
         id: 1,
@@ -50,17 +51,18 @@ export default function PlansPage() {
   const getPlanIcon = (type: string) => {
     switch (type) {
       case "workout":
-        return <FaDumbbell />;
+        return <FaDumbbell className="text-red-500" />;
       case "diet":
-        return <FaAppleAlt />;
+        return <FaAppleAlt className="text-green-500" />;
       case "physio":
-        return <FaHeartbeat />;
+        return <FaHeartbeat className="text-blue-500" />;
       default:
         return null;
     }
   };
 
-  if (loading) return <p className="p-8 text-center">Loading plans...</p>;
+  if (loading)
+    return <p className="p-8 text-center text-gray-600">Loading plans...</p>;
 
   return (
     <div className="p-6 md:p-8 space-y-12">
@@ -78,7 +80,8 @@ export default function PlansPage() {
             Your Personalized Plans
           </h1>
           <p className="text-white text-base md:text-lg mb-6 drop-shadow-md">
-            Achieve your fitness goals with tailored workout, diet, and physiotherapy plans.
+            Achieve your fitness goals with tailored workout, diet, and
+            physiotherapy plans.
           </p>
           <button className="px-6 py-3 bg-white text-green-600 font-semibold rounded-lg shadow hover:bg-gray-100 transition">
             Explore Plans
@@ -94,10 +97,15 @@ export default function PlansPage() {
             className="bg-white rounded-lg shadow-md hover:shadow-xl hover:scale-105 transition-transform duration-300 overflow-hidden"
           >
             <div className="relative w-full h-60">
-              <Image src={plan.image} alt={plan.title} fill className="object-cover" />
+              <Image
+                src={plan.image}
+                alt={plan.title}
+                fill
+                className="object-cover"
+              />
             </div>
             <div className="p-4">
-              <div className="flex items-center gap-2 text-blue-600 text-xl mb-2">
+              <div className="flex items-center gap-2 text-xl mb-2">
                 {getPlanIcon(plan.type)}
                 <h2 className="text-xl font-semibold">{plan.title}</h2>
               </div>
