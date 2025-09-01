@@ -1,31 +1,26 @@
 "use client";
+
 import Link from "next/link";
 
 export default function Navbar() {
   return (
-    <nav className="bg-white shadow-md px-8 py-4 flex justify-between items-center rounded-b-lg">
-      {/* Left side: Brand / Dashboard title */}
+    <nav className="fixed top-0 left-0 w-full bg-white shadow-md px-6 py-4 flex justify-between items-center z-50">
+      {/* Brand */}
       <div className="text-2xl font-bold text-gray-800">FitTrack+</div>
 
-      {/* Right side: Navigation links */}
-      <div className="flex space-x-6">
+      {/* Navigation Links */}
+      <div className="hidden md:flex space-x-6">
         <Link
-          href="/dashboard/profile"
+          href="/auth/login"
           className="text-gray-700 hover:text-green-600 font-semibold transition-colors"
         >
-          Profile
+          Login
         </Link>
         <Link
-          href="/dashboard/membership"
+          href="/auth/register"
           className="text-gray-700 hover:text-green-600 font-semibold transition-colors"
         >
-          Membership
-        </Link>
-        <Link
-          href="/dashboard/about"
-          className="text-gray-700 hover:text-green-600 font-semibold transition-colors"
-        >
-          About
+          Register
         </Link>
       </div>
     </nav>
