@@ -319,6 +319,62 @@ definitions:
       total_trainers:
         type: integer
     type: object
+  exercise.ExerciseResponse:
+    properties:
+      category:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      difficulty:
+        type: string
+      equipment:
+        type: string
+      id:
+        type: integer
+      image_url:
+        type: string
+      instructions:
+        type: string
+      is_active:
+        type: boolean
+      muscle_group:
+        type: string
+      name:
+        type: string
+      tips:
+        type: string
+      updated_at:
+        type: string
+      video_url:
+        type: string
+    type: object
+  exercise.UpdateExerciseRequest:
+    properties:
+      category:
+        type: string
+      description:
+        type: string
+      difficulty:
+        type: string
+      equipment:
+        type: string
+      image_url:
+        type: string
+      instructions:
+        type: string
+      is_active:
+        type: boolean
+      muscle_group:
+        type: string
+      name:
+        type: string
+      tips:
+        type: string
+      video_url:
+        type: string
+    type: object
   models.AdminProfile:
     properties:
       access_level:
@@ -729,6 +785,24 @@ definitions:
         description: JSON string of days
         type: string
     type: object
+  plan.ApprovalRequest:
+    properties:
+      notes:
+        type: string
+      trainer_id:
+        type: integer
+    required:
+    - trainer_id
+    type: object
+  plan.CreatePlanRequestRequest:
+    properties:
+      plan_id:
+        type: integer
+      reason:
+        type: string
+    required:
+    - plan_id
+    type: object
   plan.PlanRequest:
     properties:
       description:
@@ -750,6 +824,31 @@ definitions:
     - name
     - plan_type
     type: object
+  plan.PlanRequestResponse:
+    properties:
+      id:
+        type: integer
+      plan:
+        $ref: '#/definitions/plan.PlanResponse'
+      plan_id:
+        type: integer
+      reason:
+        type: string
+      requested_at:
+        type: string
+      reviewed_at:
+        type: string
+      reviewed_by:
+        type: integer
+      reviewed_by_user:
+        $ref: '#/definitions/plan.UserInfo'
+      status:
+        type: string
+      user:
+        $ref: '#/definitions/plan.UserInfo'
+      user_id:
+        type: integer
+    type: object
   plan.PlanResponse:
     properties:
       created_at:
@@ -769,6 +868,52 @@ definitions:
       plan_type:
         type: string
       updated_at:
+        type: string
+    type: object
+  plan.TrainerAssignmentResponse:
+    properties:
+      assigned_at:
+        type: string
+      assigned_by:
+        type: integer
+      assigned_by_user:
+        $ref: '#/definitions/plan.UserInfo'
+      id:
+        type: integer
+      member:
+        $ref: '#/definitions/plan.UserInfo'
+      member_id:
+        type: integer
+      notes:
+        type: string
+      plan:
+        $ref: '#/definitions/plan.PlanResponse'
+      plan_id:
+        type: integer
+      status:
+        type: string
+      trainer:
+        allOf:
+        - $ref: '#/definitions/plan.UserInfo'
+        description: Detailed information
+      trainer_id:
+        type: integer
+      user_plan:
+        $ref: '#/definitions/plan.UserPlanResponse'
+      user_plan_id:
+        type: integer
+    type: object
+  plan.UserInfo:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      role:
         type: string
     type: object
   plan.UserPlanResponse:
@@ -1006,6 +1151,177 @@ definitions:
     required:
     - phone
     type: object
+  workout.CreateExerciseRequest:
+    properties:
+      duration:
+        type: integer
+      exercise_id:
+        type: integer
+      notes:
+        type: string
+      order:
+        minimum: 1
+        type: integer
+      reps:
+        minimum: 1
+        type: integer
+      rest_time:
+        minimum: 0
+        type: integer
+      sets:
+        minimum: 1
+        type: integer
+      weight:
+        type: number
+    required:
+    - exercise_id
+    - order
+    - reps
+    - rest_time
+    - sets
+    type: object
+  workout.CreateWorkoutRequest:
+    properties:
+      description:
+        type: string
+      difficulty:
+        type: string
+      estimated_duration:
+        minimum: 1
+        type: integer
+      exercises:
+        items:
+          $ref: '#/definitions/workout.CreateExerciseRequest'
+        minItems: 1
+        type: array
+      member_id:
+        type: integer
+      name:
+        type: string
+      notes:
+        type: string
+      plan_id:
+        type: integer
+    required:
+    - difficulty
+    - estimated_duration
+    - exercises
+    - member_id
+    - name
+    type: object
+  workout.ExerciseInfo:
+    properties:
+      category:
+        type: string
+      description:
+        type: string
+      difficulty:
+        type: string
+      equipment:
+        type: string
+      id:
+        type: integer
+      image_url:
+        type: string
+      instructions:
+        type: string
+      muscle_group:
+        type: string
+      name:
+        type: string
+      tips:
+        type: string
+      video_url:
+        type: string
+    type: object
+  workout.PlanInfo:
+    properties:
+      description:
+        type: string
+      goal_type:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      plan_type:
+        type: string
+    type: object
+  workout.UserInfo:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      role:
+        type: string
+    type: object
+  workout.WorkoutExerciseResponse:
+    properties:
+      duration:
+        type: integer
+      exercise:
+        allOf:
+        - $ref: '#/definitions/workout.ExerciseInfo'
+        description: Exercise details
+      id:
+        type: integer
+      notes:
+        type: string
+      order:
+        type: integer
+      reps:
+        type: integer
+      rest_time:
+        type: integer
+      sets:
+        type: integer
+      weight:
+        type: number
+    type: object
+  workout.WorkoutResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      difficulty:
+        type: string
+      estimated_duration:
+        type: integer
+      exercises:
+        items:
+          $ref: '#/definitions/workout.WorkoutExerciseResponse'
+        type: array
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      member:
+        allOf:
+        - $ref: '#/definitions/workout.UserInfo'
+        description: Relationships
+      member_id:
+        type: integer
+      name:
+        type: string
+      notes:
+        type: string
+      plan:
+        $ref: '#/definitions/workout.PlanInfo'
+      plan_id:
+        type: integer
+      trainer:
+        $ref: '#/definitions/workout.UserInfo'
+      trainer_id:
+        type: integer
+      updated_at:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -1020,6 +1336,312 @@ info:
   title: FitTrack+ API
   version: "1.0"
 paths:
+  /admin/exercises:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Add a new exercise to the exercise library with optional video
+        and image uploads
+      parameters:
+      - description: Exercise name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Exercise description
+        in: formData
+        name: description
+        type: string
+      - description: Exercise category (strength, cardio, flexibility, balance)
+        in: formData
+        name: category
+        required: true
+        type: string
+      - description: Target muscle group
+        in: formData
+        name: muscle_group
+        required: true
+        type: string
+      - description: Difficulty level (beginner, intermediate, advanced)
+        in: formData
+        name: difficulty
+        required: true
+        type: string
+      - description: Required equipment
+        in: formData
+        name: equipment
+        required: true
+        type: string
+      - description: Exercise instructions
+        in: formData
+        name: instructions
+        type: string
+      - description: Exercise tips
+        in: formData
+        name: tips
+        type: string
+      - description: Video file (MP4, AVI, MOV, etc.)
+        in: formData
+        name: video_file
+        type: file
+      - description: Image file (JPG, PNG, etc.)
+        in: formData
+        name: image_file
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/exercise.ExerciseResponse'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden - Admin only
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new exercise with optional media files (Admin only)
+      tags:
+      - Exercises
+  /admin/exercises/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft delete an exercise (cannot delete if used in workouts)
+      parameters:
+      - description: Exercise ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success message
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden - Admin only
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete an exercise (Admin only)
+      tags:
+      - Exercises
+    put:
+      consumes:
+      - application/json
+      description: Update exercise details
+      parameters:
+      - description: Exercise ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated exercise details
+        in: body
+        name: exercise
+        required: true
+        schema:
+          $ref: '#/definitions/exercise.UpdateExerciseRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/exercise.ExerciseResponse'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden - Admin only
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update an existing exercise (Admin only)
+      tags:
+      - Exercises
+  /admin/plan-requests:
+    get:
+      consumes:
+      - application/json
+      description: Get all plan requests with optional status filter
+      parameters:
+      - description: Filter by status (pending, approved, rejected)
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/plan.PlanRequestResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden - Admin only
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all plan requests (Admin only)
+      tags:
+      - Admin
+  /admin/plan-requests/{id}/approve:
+    post:
+      consumes:
+      - application/json
+      description: Approve a pending plan request and assign a trainer to manage it
+      parameters:
+      - description: Request ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Approval details with trainer assignment
+        in: body
+        name: approval
+        required: true
+        schema:
+          $ref: '#/definitions/plan.ApprovalRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/plan.PlanRequestResponse'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden - Admin only
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Approve a plan request and assign trainer (Admin only)
+      tags:
+      - Admin
+  /admin/plan-requests/{id}/reject:
+    post:
+      consumes:
+      - application/json
+      description: Reject a pending plan request
+      parameters:
+      - description: Request ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/plan.PlanRequestResponse'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden - Admin only
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Reject a plan request (Admin only)
+      tags:
+      - Admin
+  /admin/plan-requests/pending:
+    get:
+      consumes:
+      - application/json
+      description: Get all pending plan requests that need approval
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/plan.PlanRequestResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden - Admin only
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all pending plan requests (Admin only)
+      tags:
+      - Admin
   /auth/login:
     post:
       consumes:
@@ -1191,6 +1813,144 @@ paths:
       summary: Get dashboard statistics
       tags:
       - Dashboard
+  /exercises:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve exercises with optional filtering by category, muscle
+        group, difficulty, equipment, and status
+      parameters:
+      - description: Filter by category
+        in: query
+        name: category
+        type: string
+      - description: Filter by muscle group
+        in: query
+        name: muscle_group
+        type: string
+      - description: Filter by difficulty
+        in: query
+        name: difficulty
+        type: string
+      - description: Filter by equipment
+        in: query
+        name: equipment
+        type: string
+      - description: Filter by status (active, inactive)
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/exercise.ExerciseResponse'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all exercises with optional filtering
+      tags:
+      - Exercises
+  /exercises/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information about a specific exercise
+      parameters:
+      - description: Exercise ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/exercise.ExerciseResponse'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get specific exercise details
+      tags:
+      - Exercises
+  /exercises/categories:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all unique exercise categories for filtering
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of categories
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get all available exercise categories
+      tags:
+      - Exercises
+  /exercises/difficulties:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all unique difficulty levels for filtering
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of difficulties
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get all available difficulty levels
+      tags:
+      - Exercises
+  /exercises/equipment:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all unique equipment types for filtering
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of equipment
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get all available equipment types
+      tags:
+      - Exercises
+  /exercises/muscle-groups:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all unique muscle groups for filtering
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of muscle groups
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get all available muscle groups
+      tags:
+      - Exercises
   /health:
     get:
       consumes:
@@ -1442,28 +2202,50 @@ paths:
       summary: Get user's assigned plans
       tags:
       - Plans
+  /plans/my-requests:
+    get:
+      consumes:
+      - application/json
+      description: Get all plan requests made by the current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/plan.PlanRequestResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user's plan requests
+      tags:
+      - Plans
   /plans/request:
     post:
       consumes:
       - application/json
-      description: Request to be assigned a specific plan (Members can request, but
-        admin/trainer must approve)
+      description: Request to be assigned a specific plan (Creates pending request
+        for admin approval)
       parameters:
       - description: Plan request details
         in: body
         name: request
         required: true
         schema:
-          additionalProperties: true
-          type: object
+          $ref: '#/definitions/plan.CreatePlanRequestRequest'
       produces:
       - application/json
       responses:
         "201":
-          description: Request submitted
+          description: Request created successfully
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/plan.PlanRequestResponse'
         "400":
           description: Bad request
           schema:
@@ -1484,6 +2266,124 @@ paths:
       summary: Request plan assignment (Member only)
       tags:
       - Plans
+  /trainer/assignments:
+    get:
+      consumes:
+      - application/json
+      description: Get all members and plans assigned to the current trainer
+      parameters:
+      - description: Filter by status (active, completed, paused)
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/plan.TrainerAssignmentResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden - Trainer only
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get trainer's assigned members (Trainer only)
+      tags:
+      - Trainer
+  /trainer/assignments/{id}/status:
+    put:
+      consumes:
+      - application/json
+      description: Update the status of a trainer assignment
+      parameters:
+      - description: Assignment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Status update
+        in: body
+        name: update
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/plan.TrainerAssignmentResponse'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden - Trainer only
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update assignment status (Trainer only)
+      tags:
+      - Trainer
+  /trainer/workouts:
+    get:
+      consumes:
+      - application/json
+      description: Get all workouts created by the current trainer with optional filtering
+      parameters:
+      - description: Filter by specific member
+        in: query
+        name: member_id
+        type: integer
+      - description: Filter by status (active, inactive)
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/workout.WorkoutResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden - Trainer only
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get workouts created by trainer (Trainer only)
+      tags:
+      - Workouts
   /users/profile:
     get:
       consumes:
@@ -1708,6 +2608,160 @@ paths:
       summary: Upload profile image
       tags:
       - Profile
+  /workouts:
+    post:
+      consumes:
+      - application/json
+      description: Create a personalized workout session for an assigned member
+      parameters:
+      - description: Workout details
+        in: body
+        name: workout
+        required: true
+        schema:
+          $ref: '#/definitions/workout.CreateWorkoutRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/workout.WorkoutResponse'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden - Trainer only
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new workout for a member (Trainer only)
+      tags:
+      - Workouts
+  /workouts/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information about a specific workout
+      parameters:
+      - description: Workout ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/workout.WorkoutResponse'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden - Access denied
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get specific workout details
+      tags:
+      - Workouts
+    put:
+      consumes:
+      - application/json
+      description: Update workout details and exercises
+      parameters:
+      - description: Workout ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated workout details
+        in: body
+        name: workout
+        required: true
+        schema:
+          $ref: '#/definitions/workout.CreateWorkoutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/workout.WorkoutResponse'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden - Trainer only
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update an existing workout (Trainer only)
+      tags:
+      - Workouts
+  /workouts/my-workouts:
+    get:
+      consumes:
+      - application/json
+      description: Get all workouts assigned to the current member
+      parameters:
+      - description: Filter by status (active, inactive)
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/workout.WorkoutResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden - Member only
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get workouts assigned to member (Member only)
+      tags:
+      - Workouts
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer" followed by a space and JWT token.

@@ -10,8 +10,10 @@ import (
 	"fittrackplus/internal/common/config"
 	"fittrackplus/internal/common/database"
 	"fittrackplus/internal/dashboard"
+	"fittrackplus/internal/exercise"
 	"fittrackplus/internal/plan"
 	"fittrackplus/internal/profile"
+	"fittrackplus/internal/workout"
 	_ "fittrackplus/docs" // This is required for swagger
 
 	"github.com/gin-gonic/gin"
@@ -102,13 +104,16 @@ func setupRoutes(router *gin.Engine, cfg *config.Config) {
 	profileHandler := profile.NewProfileHandler(cfg)
 	dashboardHandler := dashboard.NewDashboardHandler(cfg)
 	planHandler := plan.NewPlanHandler(cfg)
+	workoutHandler := workout.NewWorkoutHandler(cfg)
+	exerciseHandler := exercise.NewExerciseHandler(cfg)
 
 	// Debug: Check if handlers are created successfully
 	fmt.Println("🔧 Handlers initialized:")
 	fmt.Println("   - AuthHandler:", authHandler != nil)
-	fmt.Println("   - ProfileHandler:", profileHandler != nil)
 	fmt.Println("   - DashboardHandler:", dashboardHandler != nil)
 	fmt.Println("   - PlanHandler:", planHandler != nil)
+	fmt.Println("   - WorkoutHandler:", workoutHandler != nil)
+	fmt.Println("   - ExerciseHandler:", exerciseHandler != nil)
 
 	// API version 1 group
 	api := router.Group("/api/v1")
@@ -174,9 +179,64 @@ func setupRoutes(router *gin.Engine, cfg *config.Config) {
 			planGroup.GET("/my-plans", planHandler.GetUserPlans)
 			planGroup.GET("/assigned", planHandler.GetAssignedPlans)
 			
-			// Member plan selection
+			// Member plan selection and requests
 			planGroup.GET("/available", planHandler.GetAvailablePlans)
 			planGroup.POST("/request", planHandler.RequestPlanAssignment)
+			planGroup.GET("/my-requests", planHandler.GetMyRequests)
+		}
+
+		// Exercise routes (public - no authentication required for viewing)
+		exerciseGroup := api.Group("/exercises")
+		{
+			// Public exercise access
+			exerciseGroup.GET("", exerciseHandler.GetExercises)
+			exerciseGroup.GET("/:id", exerciseHandler.GetExercise)
+			exerciseGroup.GET("/categories", exerciseHandler.GetExerciseCategories)
+			exerciseGroup.GET("/muscle-groups", exerciseHandler.GetMuscleGroups)
+			exerciseGroup.GET("/difficulties", exerciseHandler.GetDifficulties)
+			exerciseGroup.GET("/equipment", exerciseHandler.GetEquipment)
+		}
+
+		// Workout routes (protected - authentication required)
+		workoutGroup := api.Group("/workouts")
+		workoutGroup.Use(auth.AuthMiddleware(cfg)) // Apply authentication middleware
+		{
+			// Workout management (Trainer only)
+			workoutGroup.POST("", workoutHandler.CreateWorkout)
+			workoutGroup.PUT("/:id", workoutHandler.UpdateWorkout)
+			
+			// Workout access
+			workoutGroup.GET("/:id", workoutHandler.GetWorkout)
+			workoutGroup.GET("/my-workouts", workoutHandler.GetMemberWorkouts)
+		}
+
+		// Admin routes for plan request management
+		adminGroup := api.Group("/admin")
+		adminGroup.Use(auth.AuthMiddleware(cfg)) // Apply authentication middleware
+		{
+			// Plan request management
+			adminGroup.GET("/plan-requests", planHandler.GetAllRequests)
+			adminGroup.GET("/plan-requests/pending", planHandler.GetPendingRequests)
+			adminGroup.POST("/plan-requests/:id/approve", planHandler.ApproveRequest)
+			adminGroup.POST("/plan-requests/:id/reject", planHandler.RejectRequest)
+			
+			// Exercise management (Admin only)
+			adminGroup.POST("/exercises", exerciseHandler.CreateExercise)
+			adminGroup.PUT("/exercises/:id", exerciseHandler.UpdateExercise)
+			adminGroup.DELETE("/exercises/:id", exerciseHandler.DeleteExercise)
+			// Media upload is now handled directly in CreateExercise endpoint
+		}
+
+		// Trainer routes for assignment management
+		trainerGroup := api.Group("/trainer")
+		trainerGroup.Use(auth.AuthMiddleware(cfg)) // Apply authentication middleware
+		{
+			// Assignment management
+			trainerGroup.GET("/assignments", planHandler.GetMyAssignments)
+			trainerGroup.PUT("/assignments/:id/status", planHandler.UpdateAssignmentStatus)
+			
+			// Workout management
+			trainerGroup.GET("/workouts", workoutHandler.GetTrainerWorkouts)
 		}
 	}
 

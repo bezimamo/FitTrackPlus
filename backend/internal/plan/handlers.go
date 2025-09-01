@@ -12,13 +12,17 @@ import (
 
 // PlanHandler handles plan HTTP requests
 type PlanHandler struct {
-	planService *PlanService
+	planService        *PlanService
+	planRequestService *PlanRequestService
+	trainerService     *TrainerService
 }
 
 // NewPlanHandler creates a new plan handler
 func NewPlanHandler(cfg *config.Config) *PlanHandler {
 	return &PlanHandler{
-		planService: NewPlanService(cfg),
+		planService:        NewPlanService(cfg),
+		planRequestService: NewPlanRequestService(cfg),
+		trainerService:     NewTrainerService(cfg),
 	}
 }
 
@@ -334,13 +338,13 @@ func (h *PlanHandler) GetAvailablePlans(c *gin.Context) {
 
 // RequestPlanAssignment godoc
 // @Summary Request plan assignment (Member only)
-// @Description Request to be assigned a specific plan (Members can request, but admin/trainer must approve)
+// @Description Request to be assigned a specific plan (Creates pending request for admin approval)
 // @Tags Plans
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body map[string]interface{} true "Plan request details"
-// @Success 201 {object} map[string]interface{} "Request submitted"
+// @Param request body CreatePlanRequestRequest true "Plan request details"
+// @Success 201 {object} PlanRequestResponse "Request created successfully"
 // @Failure 400 {object} map[string]interface{} "Bad request"
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 403 {object} map[string]interface{} "Forbidden - Members only"
@@ -372,11 +376,7 @@ func (h *PlanHandler) RequestPlanAssignment(c *gin.Context) {
 	}
 
 	// Bind request
-	var req struct {
-		PlanID uint   `json:"plan_id" binding:"required"`
-		Reason string `json:"reason,omitempty"`
-	}
-
+	var req CreatePlanRequestRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid request data",
@@ -385,28 +385,386 @@ func (h *PlanHandler) RequestPlanAssignment(c *gin.Context) {
 		return
 	}
 
-	// Check if plan exists and is active
-	_, err := h.planService.GetPlan(req.PlanID)
+	// Create the plan request
+	planRequest, err := h.planRequestService.CreatePlanRequest(userID, &req)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Plan not found or not available",
-		})
-		return
-	}
-
-	// For now, directly assign the plan (in a real app, you'd create a request system)
-	userPlan, err := h.planService.AssignPlan(userID, req.PlanID, userID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Failed to assign plan",
+			"error": "Failed to create plan request",
 			"details": err.Error(),
 		})
 		return
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"message": "Plan assigned successfully!",
-		"plan": userPlan,
-		"note": "In a real app, this would go through an approval process",
+		"message": "Plan request submitted successfully! Waiting for admin approval.",
+		"request": planRequest,
+	})
+}
+
+// ===== ADMIN ENDPOINTS FOR PLAN REQUEST MANAGEMENT =====
+
+// GetPendingRequests godoc
+// @Summary Get all pending plan requests (Admin only)
+// @Description Get all pending plan requests that need approval
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {array} PlanRequestResponse
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden - Admin only"
+// @Router /admin/plan-requests/pending [get]
+func (h *PlanHandler) GetPendingRequests(c *gin.Context) {
+	// Check if user is admin
+	userRole, exists := auth.GetCurrentUserRole(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User role not found"})
+		return
+	}
+
+	if userRole != "admin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only admins can view plan requests"})
+		return
+	}
+
+	requests, err := h.planRequestService.GetPendingRequests()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get pending requests",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Pending plan requests",
+		"requests": requests,
+		"total": len(requests),
+	})
+}
+
+// GetAllRequests godoc
+// @Summary Get all plan requests (Admin only)
+// @Description Get all plan requests with optional status filter
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param status query string false "Filter by status (pending, approved, rejected)"
+// @Success 200 {array} PlanRequestResponse
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden - Admin only"
+// @Router /admin/plan-requests [get]
+func (h *PlanHandler) GetAllRequests(c *gin.Context) {
+	// Check if user is admin
+	userRole, exists := auth.GetCurrentUserRole(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User role not found"})
+		return
+	}
+
+	if userRole != "admin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only admins can view plan requests"})
+		return
+	}
+
+	status := c.Query("status")
+	requests, err := h.planRequestService.GetAllRequests(status)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get requests",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Plan requests",
+		"requests": requests,
+		"total": len(requests),
+		"filter": status,
+	})
+}
+
+// ApproveRequest godoc
+// @Summary Approve a plan request and assign trainer (Admin only)
+// @Description Approve a pending plan request and assign a trainer to manage it
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Request ID"
+// @Param approval body ApprovalRequest true "Approval details with trainer assignment"
+// @Success 200 {object} PlanRequestResponse
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden - Admin only"
+// @Router /admin/plan-requests/{id}/approve [post]
+func (h *PlanHandler) ApproveRequest(c *gin.Context) {
+	// Check if user is admin
+	userRole, exists := auth.GetCurrentUserRole(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User role not found"})
+		return
+	}
+
+	if userRole != "admin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only admins can approve requests"})
+		return
+	}
+
+	// Get admin user ID
+	adminID, exists := auth.GetCurrentUserID(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
+		return
+	}
+
+	// Get request ID from URL
+	requestIDStr := c.Param("id")
+	requestID, err := strconv.ParseUint(requestIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request ID"})
+		return
+	}
+
+	// Bind approval request
+	var approval ApprovalRequest
+	if err := c.ShouldBindJSON(&approval); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid approval data",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Approve the request
+	approvedRequest, err := h.planRequestService.ApproveRequest(uint(requestID), adminID, &approval)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to approve request",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Plan request approved and trainer assigned successfully!",
+		"request": approvedRequest,
+	})
+}
+
+// RejectRequest godoc
+// @Summary Reject a plan request (Admin only)
+// @Description Reject a pending plan request
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Request ID"
+// @Success 200 {object} PlanRequestResponse
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden - Admin only"
+// @Router /admin/plan-requests/{id}/reject [post]
+func (h *PlanHandler) RejectRequest(c *gin.Context) {
+	// Check if user is admin
+	userRole, exists := auth.GetCurrentUserRole(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User role not found"})
+		return
+	}
+
+	if userRole != "admin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only admins can reject requests"})
+		return
+	}
+
+	// Get admin user ID
+	adminID, exists := auth.GetCurrentUserID(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
+		return
+	}
+
+	// Get request ID from URL
+	requestIDStr := c.Param("id")
+	requestID, err := strconv.ParseUint(requestIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request ID"})
+		return
+	}
+
+	// Reject the request
+	rejectedRequest, err := h.planRequestService.RejectRequest(uint(requestID), adminID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to reject request",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Plan request rejected",
+		"request": rejectedRequest,
+	})
+}
+
+// ===== MEMBER ENDPOINTS =====
+
+// GetMyRequests godoc
+// @Summary Get user's plan requests
+// @Description Get all plan requests made by the current user
+// @Tags Plans
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {array} PlanRequestResponse
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Router /plans/my-requests [get]
+func (h *PlanHandler) GetMyRequests(c *gin.Context) {
+	// Get current user ID
+	userID, exists := auth.GetCurrentUserID(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
+		return
+	}
+
+	requests, err := h.planRequestService.GetUserRequests(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get your requests",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Your plan requests",
+		"requests": requests,
+		"total": len(requests),
+	})
+}
+
+// ===== TRAINER ENDPOINTS =====
+
+// GetMyAssignments godoc
+// @Summary Get trainer's assigned members (Trainer only)
+// @Description Get all members and plans assigned to the current trainer
+// @Tags Trainer
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param status query string false "Filter by status (active, completed, paused)"
+// @Success 200 {array} TrainerAssignmentResponse
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden - Trainer only"
+// @Router /trainer/assignments [get]
+func (h *PlanHandler) GetMyAssignments(c *gin.Context) {
+	// Check if user is trainer
+	userRole, exists := auth.GetCurrentUserRole(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User role not found"})
+		return
+	}
+
+	if userRole != "trainer" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only trainers can view assignments"})
+		return
+	}
+
+	// Get trainer ID
+	trainerID, exists := auth.GetCurrentUserID(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
+		return
+	}
+
+	status := c.Query("status")
+	assignments, err := h.trainerService.GetTrainerAssignments(trainerID, status)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get assignments",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Your assigned members and plans",
+		"assignments": assignments,
+		"total": len(assignments),
+		"filter": status,
+	})
+}
+
+// UpdateAssignmentStatus godoc
+// @Summary Update assignment status (Trainer only)
+// @Description Update the status of a trainer assignment
+// @Tags Trainer
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Assignment ID"
+// @Param update body map[string]string true "Status update"
+// @Success 200 {object} TrainerAssignmentResponse
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden - Trainer only"
+// @Router /trainer/assignments/{id}/status [put]
+func (h *PlanHandler) UpdateAssignmentStatus(c *gin.Context) {
+	// Check if user is trainer
+	userRole, exists := auth.GetCurrentUserRole(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User role not found"})
+		return
+	}
+
+	if userRole != "trainer" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only trainers can update assignments"})
+		return
+	}
+
+	// Get trainer ID
+	trainerID, exists := auth.GetCurrentUserID(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
+		return
+	}
+
+	// Get assignment ID from URL
+	assignmentIDStr := c.Param("id")
+	assignmentID, err := strconv.ParseUint(assignmentIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid assignment ID"})
+		return
+	}
+
+	// Bind status update
+	var req struct {
+		Status string `json:"status" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid status data",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Update assignment status
+	assignment, err := h.trainerService.UpdateAssignmentStatus(uint(assignmentID), req.Status, trainerID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to update assignment status",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Assignment status updated successfully",
+		"assignment": assignment,
 	})
 }

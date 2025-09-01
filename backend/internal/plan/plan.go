@@ -164,6 +164,11 @@ func (s *PlanService) AssignPlan(userID, planID uint, assignedBy uint) (*UserPla
 		return nil, err
 	}
 
+	// Load the plan details for the response
+	if err := s.db.Preload("Plan").First(&userPlan, userPlan.ID).Error; err != nil {
+		return nil, err
+	}
+
 	return s.buildUserPlanResponse(&userPlan), nil
 }
 
@@ -209,9 +214,15 @@ func (s *PlanService) buildUserPlanResponse(userPlan *models.UserPlan) *UserPlan
 		Progress:    s.calculatePlanProgress(userPlan),
 	}
 
-	// Load plan details
+	// Load plan details - either from preloaded data or fetch from database
 	if userPlan.Plan.ID != 0 {
 		response.Plan = *s.buildPlanResponse(&userPlan.Plan)
+	} else {
+		// If plan is not preloaded, fetch it manually
+		var plan models.Plan
+		if err := s.db.First(&plan, userPlan.PlanID).Error; err == nil {
+			response.Plan = *s.buildPlanResponse(&plan)
+		}
 	}
 
 	return response
