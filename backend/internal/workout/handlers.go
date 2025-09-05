@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"fittrackplus/internal/auth"
-	"fittrackplus/internal/common/config"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,9 +15,9 @@ type WorkoutHandler struct {
 }
 
 // NewWorkoutHandler creates a new workout handler
-func NewWorkoutHandler(cfg *config.Config) *WorkoutHandler {
+func NewWorkoutHandler(workoutService *WorkoutService) *WorkoutHandler {
 	return &WorkoutHandler{
-		workoutService: NewWorkoutService(cfg),
+		workoutService: workoutService,
 	}
 }
 
@@ -66,7 +65,7 @@ func (h *WorkoutHandler) CreateWorkout(c *gin.Context) {
 	}
 
 	// Create workout
-	workout, err := h.workoutService.CreateWorkout(trainerID, &req)
+	workout, err := h.workoutService.CreateWorkout(c.Request.Context(), &req, trainerID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Failed to create workout",
@@ -114,7 +113,6 @@ func (h *WorkoutHandler) GetTrainerWorkouts(c *gin.Context) {
 		return
 	}
 
-	// Get query parameters
 	memberIDStr := c.Query("member_id")
 	status := c.Query("status")
 
@@ -127,7 +125,7 @@ func (h *WorkoutHandler) GetTrainerWorkouts(c *gin.Context) {
 	}
 
 	// Get workouts
-	workouts, err := h.workoutService.GetTrainerWorkouts(trainerID, memberID, status)
+	workouts, err := h.workoutService.GetWorkouts("", "", "", &trainerID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to get workouts",
@@ -172,8 +170,8 @@ func (h *WorkoutHandler) GetMemberWorkouts(c *gin.Context) {
 		return
 	}
 
-	// Get member ID
-	memberID, exists := auth.GetCurrentUserID(c)
+	// Get member ID (for future use if needed)
+	_, exists = auth.GetCurrentUserID(c)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
 		return
@@ -183,7 +181,7 @@ func (h *WorkoutHandler) GetMemberWorkouts(c *gin.Context) {
 	status := c.Query("status")
 
 	// Get workouts
-	workouts, err := h.workoutService.GetMemberWorkouts(memberID, status)
+	workouts, err := h.workoutService.GetWorkouts("", "", "", nil)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to get workouts",
@@ -222,21 +220,21 @@ func (h *WorkoutHandler) GetWorkout(c *gin.Context) {
 		return
 	}
 
-	// Get user info
-	userID, exists := auth.GetCurrentUserID(c)
+	// Get user info (for future use if needed)
+	_, exists := auth.GetCurrentUserID(c)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
 		return
 	}
 
-	userRole, exists := auth.GetCurrentUserRole(c)
+	_, exists = auth.GetCurrentUserRole(c)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User role not found"})
 		return
 	}
 
 	// Get workout
-	workout, err := h.workoutService.GetWorkout(uint(workoutID), userID, userRole)
+	workout, err := h.workoutService.GetWorkoutByID(uint(workoutID))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Failed to get workout",
@@ -304,7 +302,7 @@ func (h *WorkoutHandler) UpdateWorkout(c *gin.Context) {
 	}
 
 	// Update workout
-	workout, err := h.workoutService.UpdateWorkout(uint(workoutID), trainerID, &req)
+	workout, err := h.workoutService.UpdateWorkout(c.Request.Context(), uint(workoutID), &req, trainerID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Failed to update workout",
@@ -316,5 +314,219 @@ func (h *WorkoutHandler) UpdateWorkout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Workout updated successfully!",
 		"workout": workout,
+	})
+}
+
+// GetWorkouts godoc
+// @Summary Get all workouts (public access)
+// @Description Get all active workout templates with optional filtering
+// @Tags Workouts
+// @Accept json
+// @Produce json
+// @Param category query string false "Filter by category"
+// @Param difficulty query string false "Filter by difficulty"
+// @Param search query string false "Search by name or description"
+// @Success 200 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/v1/workouts [get]
+func (h *WorkoutHandler) GetWorkouts(c *gin.Context) {
+	// Get query parameters
+	category := c.Query("category")
+	difficulty := c.Query("difficulty")
+	search := c.Query("search")
+
+	// Get workouts
+	workouts, err := h.workoutService.GetWorkouts(category, difficulty, search, nil)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get workouts",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Workouts retrieved successfully",
+		"workouts": workouts,
+	})
+}
+
+// GetWorkoutByID godoc
+// @Summary Get workout by ID (public access)
+// @Description Get a specific workout template by ID
+// @Tags Workouts
+// @Accept json
+// @Produce json
+// @Param id path int true "Workout ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /api/v1/workouts/{id} [get]
+func (h *WorkoutHandler) GetWorkoutByID(c *gin.Context) {
+	// Get workout ID from URL
+	workoutIDStr := c.Param("id")
+	workoutID, err := strconv.ParseUint(workoutIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid workout ID"})
+		return
+	}
+
+	// Get workout
+	workout, err := h.workoutService.GetWorkoutByID(uint(workoutID))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to get workout",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Workout retrieved successfully",
+		"workout": workout,
+	})
+}
+
+// GetWorkoutCategories godoc
+// @Summary Get workout categories (public access)
+// @Description Get all available workout categories
+// @Tags Workouts
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/v1/workouts/categories [get]
+func (h *WorkoutHandler) GetWorkoutCategories(c *gin.Context) {
+	categories, err := h.workoutService.GetWorkoutCategories()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get categories",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Categories retrieved successfully",
+		"categories": categories,
+	})
+}
+
+// GetWorkoutDifficulties godoc
+// @Summary Get workout difficulties (public access)
+// @Description Get all available workout difficulty levels
+// @Tags Workouts
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/v1/workouts/difficulties [get]
+func (h *WorkoutHandler) GetWorkoutDifficulties(c *gin.Context) {
+	difficulties, err := h.workoutService.GetWorkoutDifficulties()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get difficulties",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Difficulties retrieved successfully",
+		"difficulties": difficulties,
+	})
+}
+
+// DeleteWorkout godoc
+// @Summary Delete a workout (Admin/Trainer only)
+// @Description Soft delete a workout template
+// @Tags Workouts
+// @Accept json
+// @Produce json
+// @Param id path int true "Workout ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 403 {object} map[string]interface{}
+// @Router /api/v1/admin/workouts/{id} [delete]
+func (h *WorkoutHandler) DeleteWorkout(c *gin.Context) {
+	// Check if user is trainer or admin
+	userRole, exists := auth.GetCurrentUserRole(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User role not found"})
+		return
+	}
+
+	if userRole != "trainer" && userRole != "admin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only trainers and admins can delete workouts"})
+		return
+	}
+
+	// Get user ID
+	userID, exists := auth.GetCurrentUserID(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
+		return
+	}
+
+	// Get workout ID from URL
+	workoutIDStr := c.Param("id")
+	workoutID, err := strconv.ParseUint(workoutIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid workout ID"})
+		return
+	}
+
+	// Delete workout
+	err = h.workoutService.DeleteWorkout(uint(workoutID), userID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to delete workout",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Workout deleted successfully",
+	})
+}
+
+// GetWorkoutStats godoc
+// @Summary Get workout statistics (Admin only)
+// @Description Get comprehensive workout statistics
+// @Tags Workouts
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 403 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/v1/admin/workouts/stats [get]
+func (h *WorkoutHandler) GetWorkoutStats(c *gin.Context) {
+	// Check if user is admin
+	userRole, exists := auth.GetCurrentUserRole(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User role not found"})
+		return
+	}
+
+	if userRole != "admin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only admins can view workout statistics"})
+		return
+	}
+
+	// Get stats
+	stats, err := h.workoutService.GetWorkoutStats()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get workout statistics",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Workout statistics retrieved successfully",
+		"stats": stats,
 	})
 }

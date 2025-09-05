@@ -212,52 +212,10 @@ type Exercise struct {
 	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"`
 
 	// Relationships
-	WorkoutExercises []WorkoutExercise `json:"workout_exercises,omitempty" gorm:"foreignKey:ExerciseID"`
+	// WorkoutExercises relationship moved to workout.go
 }
 
-// Workout represents a complete workout session
-type Workout struct {
-	ID          uint           `json:"id" gorm:"primaryKey"`
-	Name        string         `json:"name" gorm:"not null"`
-	Description string         `json:"description"`
-	MemberID    uint           `json:"member_id"` // Who this workout is for
-	TrainerID   uint           `json:"trainer_id"` // Who created this workout
-	PlanID      *uint          `json:"plan_id,omitempty"` // Optional: linked to a plan
-	Difficulty  string         `json:"difficulty"` // beginner, intermediate, advanced
-	EstimatedDuration int      `json:"estimated_duration"` // minutes
-	Notes       string         `json:"notes"` // Instructions for the member
-	IsActive    bool           `json:"is_active" gorm:"default:true"`
-	CreatedAt   time.Time      `json:"created_at"`
-	UpdatedAt   time.Time      `json:"updated_at"`
-	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"`
-
-	// Relationships
-	Member      User            `json:"member,omitempty" gorm:"foreignKey:MemberID"`
-	Trainer     User            `json:"trainer,omitempty" gorm:"foreignKey:TrainerID"`
-	Plan        *Plan           `json:"plan,omitempty" gorm:"foreignKey:PlanID"`
-	Exercises   []WorkoutExercise `json:"exercises,omitempty" gorm:"foreignKey:WorkoutID"`
-	WorkoutLogs []WorkoutLog    `json:"workout_logs,omitempty" gorm:"foreignKey:WorkoutID"`
-}
-
-// WorkoutExercise links exercises to workouts with specific parameters
-type WorkoutExercise struct {
-	ID          uint           `json:"id" gorm:"primaryKey"`
-	WorkoutID   uint           `json:"workout_id"`
-	ExerciseID  uint           `json:"exercise_id"`
-	Order       int            `json:"order"` // Exercise order in workout
-	Sets        int            `json:"sets"` // Number of sets
-	Reps        int            `json:"reps"` // Reps per set
-	Weight      *float64       `json:"weight,omitempty"` // Weight in kg (optional)
-	Duration    *int           `json:"duration,omitempty"` // Duration in seconds (for cardio)
-	RestTime    int            `json:"rest_time"` // Rest time between sets in seconds
-	Notes       string         `json:"notes"` // Specific notes for this exercise
-	CreatedAt   time.Time      `json:"created_at"`
-	UpdatedAt   time.Time      `json:"updated_at"`
-
-	// Relationships
-	Workout     Workout        `json:"workout,omitempty" gorm:"foreignKey:WorkoutID"`
-	Exercise    Exercise       `json:"exercise,omitempty" gorm:"foreignKey:ExerciseID"`
-}
+// Note: Workout and WorkoutExercise models moved to workout.go for better organization
 
 // WorkoutLog tracks when members complete workouts
 type WorkoutLog struct {
