@@ -58,6 +58,17 @@ type UpdateProfileRequest struct {
 	Phone     string `json:"phone"`
 }
 
+// TrainerInfo represents trainer information for admin views
+type TrainerInfo struct {
+	ID        uint   `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	Phone     string `json:"phone"`
+	IsActive  bool   `json:"is_active"`
+	CreatedAt string `json:"created_at"`
+}
+
 // AuthResponse represents the response after successful authentication
 type AuthResponse struct {
 	Token     string      `json:"token"`
@@ -201,6 +212,200 @@ func (s *AuthService) UpdateProfile(userID uint, req *UpdateProfileRequest) (*mo
 	}
 
 	// Don't return the password
+	user.Password = ""
+	return &user, nil
+}
+
+// GetTrainers retrieves all users with trainer role
+func (s *AuthService) GetTrainers() ([]TrainerInfo, error) {
+	var users []models.User
+	if err := s.db.Where("role = ?", "trainer").Find(&users).Error; err != nil {
+		return nil, err
+	}
+
+	var trainers []TrainerInfo
+	for _, user := range users {
+		trainers = append(trainers, TrainerInfo{
+			ID:        user.ID,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+			Email:     user.Email,
+			Phone:     user.Phone,
+			IsActive:  user.IsActive,
+			CreatedAt: user.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		})
+	}
+
+	return trainers, nil
+}
+
+// GetAllUsers gets all users with pagination and filtering
+func (s *AuthService) GetAllUsers(page, limit int, role, search, status string) ([]UserListResponse, int64, error) {
+	var users []models.User
+	var total int64
+
+	query := s.db.Model(&models.User{})
+
+	// Apply filters
+	if role != "" {
+		query = query.Where("role = ?", role)
+	}
+	if search != "" {
+		searchTerm := "%" + search + "%"
+		query = query.Where("first_name ILIKE ? OR last_name ILIKE ? OR email ILIKE ?", searchTerm, searchTerm, searchTerm)
+	}
+	if status != "" {
+		if status == "active" {
+			query = query.Where("is_active = ?", true)
+		} else if status == "inactive" {
+			query = query.Where("is_active = ?", false)
+		}
+	}
+
+	// Get total count
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// Apply pagination
+	offset := (page - 1) * limit
+	if err := query.Offset(offset).Limit(limit).Order("created_at DESC").Find(&users).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// Convert to response format
+	var responses []UserListResponse
+	for _, user := range users {
+		responses = append(responses, UserListResponse{
+			ID:        user.ID,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+			Email:     user.Email,
+			Phone:     user.Phone,
+			Role:      user.Role,
+			IsActive:  user.IsActive,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
+		})
+	}
+
+	return responses, total, nil
+}
+
+// CreateUser creates a new user
+func (s *AuthService) CreateUser(req *CreateUserRequest) (*models.User, error) {
+	// Check if email already exists
+	var existingUser models.User
+	if err := s.db.Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
+		return nil, errors.New("user with this email already exists")
+	}
+
+	// Hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create user
+	user := models.User{
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Email:     req.Email,
+		Password:  string(hashedPassword),
+		Phone:     req.Phone,
+		Role:      req.Role,
+		IsActive:  true,
+	}
+
+	if err := s.db.Create(&user).Error; err != nil {
+		return nil, err
+	}
+
+	// Clear password from response
+	user.Password = ""
+	return &user, nil
+}
+
+// UpdateUser updates an existing user
+func (s *AuthService) UpdateUser(userID uint, req *UpdateUserRequest) (*models.User, error) {
+	var user models.User
+	if err := s.db.First(&user, userID).Error; err != nil {
+		return nil, err
+	}
+
+	// Update fields if provided
+	if req.FirstName != nil {
+		user.FirstName = *req.FirstName
+	}
+	if req.LastName != nil {
+		user.LastName = *req.LastName
+	}
+	if req.Email != nil {
+		// Check if new email already exists
+		var existingUser models.User
+		if err := s.db.Where("email = ? AND id != ?", *req.Email, userID).First(&existingUser).Error; err == nil {
+			return nil, errors.New("user with this email already exists")
+		}
+		user.Email = *req.Email
+	}
+	if req.Phone != nil {
+		user.Phone = *req.Phone
+	}
+	if req.IsActive != nil {
+		user.IsActive = *req.IsActive
+	}
+
+	if err := s.db.Save(&user).Error; err != nil {
+		return nil, err
+	}
+
+	// Clear password from response
+	user.Password = ""
+	return &user, nil
+}
+
+// DeactivateUser deactivates a user (soft delete)
+func (s *AuthService) DeactivateUser(userID uint) error {
+	var user models.User
+	if err := s.db.First(&user, userID).Error; err != nil {
+		return err
+	}
+
+	user.IsActive = false
+	return s.db.Save(&user).Error
+}
+
+// GetAvailableRoles gets all available user roles
+func (s *AuthService) GetAvailableRoles() []string {
+	return []string{"member", "trainer", "physio", "admin"}
+}
+
+// ChangeUserRole changes a user's role
+func (s *AuthService) ChangeUserRole(userID uint, newRole string) (*models.User, error) {
+	var user models.User
+	if err := s.db.First(&user, userID).Error; err != nil {
+		return nil, err
+	}
+
+	// Validate role
+	validRoles := []string{"member", "trainer", "physio", "admin"}
+	roleValid := false
+	for _, role := range validRoles {
+		if role == newRole {
+			roleValid = true
+			break
+		}
+	}
+	if !roleValid {
+		return nil, errors.New("invalid role")
+	}
+
+	user.Role = newRole
+	if err := s.db.Save(&user).Error; err != nil {
+		return nil, err
+	}
+
+	// Clear password from response
 	user.Password = ""
 	return &user, nil
 }

@@ -379,3 +379,40 @@ func (h *ExerciseHandler) GetEquipment(c *gin.Context) {
 		"equipment": equipment,
 	})
 }
+
+// GetExerciseStats godoc
+// @Summary Get exercise statistics (Admin only)
+// @Description Retrieve exercise statistics for admin dashboard
+// @Tags Exercises
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} map[string]interface{} "Exercise statistics"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Forbidden - Admin only"
+// @Router /admin/exercises/stats [get]
+func (h *ExerciseHandler) GetExerciseStats(c *gin.Context) {
+	// Check if user is admin
+	userRole, exists := auth.GetCurrentUserRole(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User role not found"})
+		return
+	}
+
+	if userRole != "admin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only admins can view exercise statistics"})
+		return
+	}
+
+	// Get exercise statistics
+	stats, err := h.exerciseService.GetExerciseStats()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get exercise statistics",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, stats)
+}

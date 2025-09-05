@@ -217,6 +217,7 @@ func setupRoutes(router *gin.Engine, cfg *config.Config) {
 			// Plan request management
 			adminGroup.GET("/plan-requests", planHandler.GetAllRequests)
 			adminGroup.GET("/plan-requests/pending", planHandler.GetPendingRequests)
+			adminGroup.GET("/plan-requests/:id", planHandler.GetPlanRequestDetails)
 			adminGroup.POST("/plan-requests/:id/approve", planHandler.ApproveRequest)
 			adminGroup.POST("/plan-requests/:id/reject", planHandler.RejectRequest)
 			
@@ -224,7 +225,18 @@ func setupRoutes(router *gin.Engine, cfg *config.Config) {
 			adminGroup.POST("/exercises", exerciseHandler.CreateExercise)
 			adminGroup.PUT("/exercises/:id", exerciseHandler.UpdateExercise)
 			adminGroup.DELETE("/exercises/:id", exerciseHandler.DeleteExercise)
+			adminGroup.GET("/exercises/stats", exerciseHandler.GetExerciseStats)
 			// Media upload is now handled directly in CreateExercise endpoint
+			
+			                // User management (Admin only)
+                adminGroup.GET("/users/trainers", authHandler.GetTrainers)
+                adminGroup.GET("/users", authHandler.GetAllUsers)
+                adminGroup.GET("/users/:id", authHandler.GetUserByID)
+                adminGroup.POST("/users", authHandler.CreateUser)
+                adminGroup.PUT("/users/:id", authHandler.UpdateUser)
+                adminGroup.DELETE("/users/:id", authHandler.DeactivateUser)
+                adminGroup.GET("/users/roles", authHandler.GetAvailableRoles)
+                adminGroup.POST("/users/:id/change-role", authHandler.ChangeUserRole)
 		}
 
 		// Trainer routes for assignment management
@@ -241,7 +253,7 @@ func setupRoutes(router *gin.Engine, cfg *config.Config) {
 	}
 
 	fmt.Println("✅ Routes configured successfully")
-	fmt.Println("   - Auth routes: /api/v1/auth/*")
+	fmt.Println("✅ - Auth routes: /api/v1/auth/*")
 	fmt.Println("   - User routes: /api/v1/users/*")
 	fmt.Println("   - Dashboard routes: /api/v1/dashboard/*")
 	fmt.Println("   - Plan routes: /api/v1/plans/*")

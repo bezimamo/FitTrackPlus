@@ -58,6 +58,22 @@ type ApprovalRequest struct {
 	Notes     string `json:"notes,omitempty"`
 }
 
+// PlanRequestDetailResponse represents detailed plan request information with trainer assignment
+type PlanRequestDetailResponse struct {
+	*PlanRequestResponse
+	TrainerAssignment *TrainerAssignmentInfo `json:"trainer_assignment,omitempty"`
+}
+
+// TrainerAssignmentInfo represents trainer assignment information
+type TrainerAssignmentInfo struct {
+	ID         uint   `json:"id"`
+	TrainerID  uint   `json:"trainer_id"`
+	Status     string `json:"status"`
+	AssignedAt string `json:"assigned_at"`
+	Notes      string `json:"notes"`
+	Trainer    *UserInfo `json:"trainer,omitempty"`
+}
+
 // CreatePlanRequest creates a new plan request (member requests a plan)
 func (s *PlanRequestService) CreatePlanRequest(userID uint, req *CreatePlanRequestRequest) (*PlanRequestResponse, error) {
 	// Check if plan exists and is active
@@ -263,6 +279,34 @@ func (s *PlanRequestService) GetUserRequests(userID uint) ([]PlanRequestResponse
 	return responses, nil
 }
 
+// GetTrainerAssignment gets the trainer assigned to a specific plan request
+func (s *PlanRequestService) GetTrainerAssignment(requestID uint) (*TrainerAssignmentInfo, error) {
+	var assignment models.TrainerAssignment
+	if err := s.db.Where("user_plan_id IN (SELECT id FROM user_plans WHERE user_id = (SELECT user_id FROM plan_requests WHERE id = ?))", requestID).
+		Preload("Trainer").
+		First(&assignment).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil // No assignment found
+		}
+		return nil, err
+	}
+
+	return &TrainerAssignmentInfo{
+		ID:         assignment.ID,
+		TrainerID:  assignment.TrainerID,
+		Status:     assignment.Status,
+		AssignedAt: assignment.AssignedAt.Format("2006-01-02T15:04:05Z07:00"),
+		Notes:      assignment.Notes,
+		Trainer: &UserInfo{
+			ID:        assignment.Trainer.ID,
+			FirstName: assignment.Trainer.FirstName,
+			LastName:  assignment.Trainer.LastName,
+			Email:     assignment.Trainer.Email,
+			Role:      assignment.Trainer.Role,
+		},
+	}, nil
+}
+
 // Helper function to build response
 func (s *PlanRequestService) buildPlanRequestResponse(request *models.PlanRequest) *PlanRequestResponse {
 	response := &PlanRequestResponse{
@@ -314,4 +358,47 @@ func (s *PlanRequestService) buildPlanRequestResponse(request *models.PlanReques
 	}
 
 	return response
+}
+
+// GetRequestDetails gets detailed information about a specific plan request including trainer assignment
+func (s *PlanRequestService) GetRequestDetails(requestID uint) (*PlanRequestDetailResponse, error) {
+	var planRequest models.PlanRequest
+	if err := s.db.Preload("User").Preload("Plan").Preload("ReviewedByUser").First(&planRequest, requestID).Error; err != nil {
+		return nil, errors.New("request not found")
+	}
+
+	// Build basic response
+	response := s.buildPlanRequestResponse(&planRequest)
+	detailResponse := &PlanRequestDetailResponse{
+		PlanRequestResponse: response,
+	}
+
+	// If request is approved, get trainer assignment details
+	if planRequest.Status == "approved" {
+		var trainerAssignment models.TrainerAssignment
+		if err := s.db.Where("user_plan_id IN (SELECT id FROM user_plans WHERE user_id = ? AND plan_id = ?)", 
+			planRequest.UserID, planRequest.PlanID).First(&trainerAssignment).Error; err == nil {
+			
+			// Get trainer user info
+			var trainer models.User
+			if err := s.db.First(&trainer, trainerAssignment.TrainerID).Error; err == nil {
+				detailResponse.TrainerAssignment = &TrainerAssignmentInfo{
+					ID:         trainerAssignment.ID,
+					TrainerID:  trainerAssignment.TrainerID,
+					Status:     trainerAssignment.Status,
+					AssignedAt: trainerAssignment.AssignedAt.Format("2006-01-02T15:04:05Z07:00"),
+					Notes:      trainerAssignment.Notes,
+					Trainer: &UserInfo{
+						ID:        trainer.ID,
+						FirstName: trainer.FirstName,
+						LastName:  trainer.LastName,
+						Email:     trainer.Email,
+						Role:      trainer.Role,
+					},
+				}
+			}
+		}
+	}
+
+	return detailResponse, nil
 }

@@ -292,6 +292,63 @@ func (s *ExerciseService) GetEquipment() ([]string, error) {
 	return equipment, nil
 }
 
+// GetExerciseStats gets exercise statistics for admin dashboard
+func (s *ExerciseService) GetExerciseStats() (map[string]interface{}, error) {
+	var totalExercises, activeExercises, strengthExercises, cardioExercises, flexibilityExercises int64
+	var avgDifficulty string
+
+	// Get total exercises
+	if err := s.db.Model(&models.Exercise{}).Count(&totalExercises).Error; err != nil {
+		return nil, err
+	}
+
+	// Get active exercises
+	if err := s.db.Model(&models.Exercise{}).Where("is_active = ?", true).Count(&activeExercises).Error; err != nil {
+		return nil, err
+	}
+
+	// Get exercises by category
+	if err := s.db.Model(&models.Exercise{}).Where("category = ?", "strength").Count(&strengthExercises).Error; err != nil {
+		return nil, err
+	}
+	if err := s.db.Model(&models.Exercise{}).Where("category = ?", "cardio").Count(&cardioExercises).Error; err != nil {
+		return nil, err
+	}
+	if err := s.db.Model(&models.Exercise{}).Where("category = ?", "flexibility").Count(&flexibilityExercises).Error; err != nil {
+		return nil, err
+	}
+
+	// Calculate average difficulty (simplified - most common difficulty)
+	var difficulties []string
+	if err := s.db.Model(&models.Exercise{}).Pluck("difficulty", &difficulties).Error; err != nil {
+		return nil, err
+	}
+
+	// Count occurrences of each difficulty
+	difficultyCount := make(map[string]int)
+	for _, diff := range difficulties {
+		difficultyCount[diff]++
+	}
+
+	// Find most common difficulty
+	maxCount := 0
+	for diff, count := range difficultyCount {
+		if count > maxCount {
+			maxCount = count
+			avgDifficulty = diff
+		}
+	}
+
+	return map[string]interface{}{
+		"total_exercises":      totalExercises,
+		"active_exercises":     activeExercises,
+		"strength_exercises":   strengthExercises,
+		"cardio_exercises":     cardioExercises,
+		"flexibility_exercises": flexibilityExercises,
+		"avg_difficulty":       avgDifficulty,
+	}, nil
+}
+
 // Helper function to build response
 func (s *ExerciseService) buildExerciseResponse(exercise *models.Exercise) *ExerciseResponse {
 	return &ExerciseResponse{

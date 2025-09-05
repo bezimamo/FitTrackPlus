@@ -647,6 +647,60 @@ func (h *PlanHandler) GetMyRequests(c *gin.Context) {
 	})
 }
 
+// GetPlanRequestDetails godoc
+// @Summary Get plan request details with trainer assignment (Admin only)
+// @Description Get detailed information about a specific plan request including trainer assignment if approved
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Plan Request ID"
+// @Success 200 {object} PlanRequestDetailResponse
+// @Failure 400 {object} map[string]interface{} "Bad request"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "Request not found"
+// @Router /admin/plan-requests/{id} [get]
+func (h *PlanHandler) GetPlanRequestDetails(c *gin.Context) {
+	// Check if user is admin
+	userRole, exists := auth.GetCurrentUserRole(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User role not found"})
+		return
+	}
+
+	if userRole != "admin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only admins can view request details"})
+		return
+	}
+
+	// Get request ID from URL
+	requestIDStr := c.Param("id")
+	requestID, err := strconv.ParseUint(requestIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request ID"})
+		return
+	}
+
+	// Get request details with trainer assignment
+	details, err := h.planRequestService.GetRequestDetails(uint(requestID))
+	if err != nil {
+		if err.Error() == "request not found" {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Request not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get request details",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Request details retrieved successfully",
+		"request": details,
+	})
+}
+
 // ===== TRAINER ENDPOINTS =====
 
 // GetMyAssignments godoc
