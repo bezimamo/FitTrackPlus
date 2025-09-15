@@ -67,12 +67,15 @@ func AutoMigrate() error {
 		&models.PhysioProfile{},
 		&models.Plan{},
 		&models.UserPlan{},
-		&models.PlanRequest{},        // New: Plan request management
-		&models.TrainerAssignment{},  // New: Trainer assignment management
-		&models.Exercise{},           // New: Exercise library
-		&models.Workout{},            // New: Workout sessions
-		&models.WorkoutExercise{},    // New: Exercise-workout linking
-		&models.WorkoutLog{},         // New: Workout completion tracking
+		&models.PlanRequest{},        // Plan request management
+		&models.TrainerAssignment{},  // Trainer assignment management
+		&models.Exercise{},           // Exercise library
+		&models.Workout{},            // Workout templates and sessions
+		&models.WorkoutExercise{},    // Exercise-workout linking
+		&models.UserWorkout{},        // User workout sessions
+		&models.UserWorkoutExercise{}, // User workout exercise tracking
+		&models.WorkoutCategory{},    // Workout categories
+		&models.WorkoutDifficulty{},  // Workout difficulty levels
 		&models.ProgressLog{},
 		&models.Booking{},
 		&models.Payment{},

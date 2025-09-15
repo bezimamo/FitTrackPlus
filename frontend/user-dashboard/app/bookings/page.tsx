@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Sidebar from "@/components/Sidebar";
+import { AppSidebar } from "@/components/app-sidebar"
 import BookingHeader from "@/components/dashboard/bookings/BookingHeader";
 import BookingFilters from "@/components/dashboard/bookings/BookingFilters";
 import BookingGrid from "@/components/dashboard/bookings/BookingGrid";
@@ -125,7 +125,7 @@ export default function BookingPage() {
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
       <aside className="fixed left-0 top-0 h-full w-64">
-        <Sidebar />
+        <AppSidebar />
       </aside>
 
       {/* Main Content */}

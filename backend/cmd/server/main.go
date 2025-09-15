@@ -104,8 +104,15 @@ func setupRoutes(router *gin.Engine, cfg *config.Config) {
 	profileHandler := profile.NewProfileHandler(cfg)
 	dashboardHandler := dashboard.NewDashboardHandler(cfg)
 	planHandler := plan.NewPlanHandler(cfg)
-	workoutHandler := workout.NewWorkoutHandler(cfg)
 	exerciseHandler := exercise.NewExerciseHandler(cfg)
+	
+	// Create workout service and handler
+	workoutService := workout.NewWorkoutService(database.DB)
+	workoutHandler := workout.NewWorkoutHandler(workoutService)
+	
+	// Create user workout service and handler
+	userWorkoutService := workout.NewUserWorkoutService(database.DB)
+	userWorkoutHandler := workout.NewUserWorkoutHandler(userWorkoutService)
 
 	// Debug: Check if handlers are created successfully
 	fmt.Println("🔧 Handlers initialized:")
@@ -197,17 +204,29 @@ func setupRoutes(router *gin.Engine, cfg *config.Config) {
 			exerciseGroup.GET("/equipment", exerciseHandler.GetEquipment)
 		}
 
-		// Workout routes (protected - authentication required)
+		// Workout routes (public for viewing, protected for management)
 		workoutGroup := api.Group("/workouts")
-		workoutGroup.Use(auth.AuthMiddleware(cfg)) // Apply authentication middleware
 		{
-			// Workout management (Trainer only)
-			workoutGroup.POST("", workoutHandler.CreateWorkout)
-			workoutGroup.PUT("/:id", workoutHandler.UpdateWorkout)
-			
-			// Workout access
-			workoutGroup.GET("/:id", workoutHandler.GetWorkout)
-			workoutGroup.GET("/my-workouts", workoutHandler.GetMemberWorkouts)
+			// Public workout access
+			workoutGroup.GET("", workoutHandler.GetWorkouts)
+			workoutGroup.GET("/:id", workoutHandler.GetWorkoutByID)
+			workoutGroup.GET("/categories", workoutHandler.GetWorkoutCategories)
+			workoutGroup.GET("/difficulties", workoutHandler.GetWorkoutDifficulties)
+		}
+
+		// User workout session routes (protected - authentication required)
+		userWorkoutGroup := api.Group("/workouts")
+		userWorkoutGroup.Use(auth.AuthMiddleware(cfg)) // Apply authentication middleware
+		{
+			// Workout session management
+			userWorkoutGroup.POST("/start", userWorkoutHandler.StartWorkout)
+			userWorkoutGroup.POST("/:id/complete-set", userWorkoutHandler.CompleteExerciseSet)
+			userWorkoutGroup.POST("/:id/complete", userWorkoutHandler.CompleteWorkout)
+			userWorkoutGroup.POST("/:id/pause", userWorkoutHandler.PauseWorkout)
+			userWorkoutGroup.POST("/:id/resume", userWorkoutHandler.ResumeWorkout)
+			userWorkoutGroup.GET("/session/:id", userWorkoutHandler.GetUserWorkout)
+			userWorkoutGroup.GET("/my-sessions", userWorkoutHandler.GetUserWorkouts)
+			userWorkoutGroup.GET("/:id/progress", userWorkoutHandler.GetWorkoutProgress)
 		}
 
 		// Admin routes for plan request management
@@ -227,6 +246,12 @@ func setupRoutes(router *gin.Engine, cfg *config.Config) {
 			adminGroup.DELETE("/exercises/:id", exerciseHandler.DeleteExercise)
 			adminGroup.GET("/exercises/stats", exerciseHandler.GetExerciseStats)
 			// Media upload is now handled directly in CreateExercise endpoint
+			
+			// Workout management (Admin/Trainer only)
+			adminGroup.POST("/workouts", workoutHandler.CreateWorkout)
+			adminGroup.PUT("/workouts/:id", workoutHandler.UpdateWorkout)
+			adminGroup.DELETE("/workouts/:id", workoutHandler.DeleteWorkout)
+			adminGroup.GET("/workouts/stats", workoutHandler.GetWorkoutStats)
 			
 			                // User management (Admin only)
                 adminGroup.GET("/users/trainers", authHandler.GetTrainers)

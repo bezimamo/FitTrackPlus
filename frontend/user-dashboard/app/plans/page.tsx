@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Sidebar from "@/components/Sidebar";
+import { AppSidebar } from "@/components/app-sidebar"
 import PlanCard from "@/components/dashboard/plans/PlanCard";
 import PlanFilters from "@/components/dashboard/plans/PlanFiltersComponent";
 import PlanDetails from "@/components/dashboard/plans/PlanDetails";
@@ -65,7 +65,7 @@ export default function PlansPage() {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <aside className="fixed left-0 top-0 h-full w-64">
-        <Sidebar />
+        <AppSidebar />
       </aside>
 
       <main className="flex-1 md:ml-64 p-6">

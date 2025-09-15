@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import apiFetch from "@/lib/api";
 import { UserProfileResponse } from "@/lib/types/profile";
-import Sidebar from "@/components/Sidebar";
+import { AppSidebar } from "@/components/app-sidebar"
 import ProfileHeader from "@/components/dashboard/profile/ProfileHeader";
 import ProfileDetails from "@/components/dashboard/profile/ProfileDetails";
 import ProfileCompletion from "@/components/dashboard/profile/ProfileCompletion";
@@ -44,7 +44,7 @@ export default function ProfilePage() {
     <div className="flex">
       {/* Sidebar fixed */}
       <div className="w-64 flex-shrink-0">
-        <Sidebar />
+        <AppSidebar />
       </div>
 
       {/* Scrollable Main Content */}

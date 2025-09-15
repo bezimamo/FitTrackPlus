@@ -1,6 +1,6 @@
 "use client";
 
-import Sidebar from "@/components/Sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
 import { StatsOverview } from "@/components/dashboard/progress/stats-overview";
 import { WeightChart } from "@/components/dashboard/progress/weight-chart";
 import { WorkoutChart } from "@/components/dashboard/progress/workout-chart";
@@ -54,7 +54,7 @@ export default function ProgressPage() {
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
       <aside className="fixed left-0 top-0 h-full w-64">
-        <Sidebar />
+        <AppSidebar />
       </aside>
 
       {/* Main Content */}

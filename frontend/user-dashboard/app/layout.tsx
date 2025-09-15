@@ -1,34 +1,46 @@
-"use client"; // <-- Make this a client component
+"use client"
 
-import './globals.css';
-import { usePathname } from 'next/navigation';
-import Navbar from '../components/Navbar';
-import Sidebar from '../components/Sidebar';
-import DashboardNavbar from '../components/DashboardNavbar';
+import "./globals.css"
+import { usePathname } from "next/navigation"
+import { Navbar } from "@/components/Navbar"
+import { AppSidebar } from "@/components/app-sidebar"
+import DashboardNavbar from "@/components/DashboardNavbar"
+import { SidebarProvider } from "@/components/ui/sidebar"
+import { Footer } from "@/components/footer"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-
-  const isDashboard = pathname?.startsWith('/dashboard');
+  const pathname = usePathname()
+  const isDashboard = pathname?.startsWith("/dashboard")
 
   return (
     <html lang="en">
       <body className="flex flex-col min-h-screen">
-        {isDashboard ? (
-          <div className="flex">
-            <Sidebar />
-            <div className="flex-1 flex flex-col">
-              <DashboardNavbar />
-              <main className="pt-20 px-4 md:px-8">{children}</main>
+        <SidebarProvider>
+          {isDashboard ? (
+            <div className="flex flex-1 relative">
+              {/* Sidebar stays fixed */}
+              <AppSidebar />
+
+              {/* Content area with left margin so it's not covered */}
+              <div className="flex-1 flex flex-col ml-64 min-h-screen">
+                <DashboardNavbar />
+                <main className="flex-1 pt-20 px-4 md:px-8">{children}</main>
+                
+                {/* Footer wrapper with z-index and full width */}
+                <div className="w-full z-10">
+                  <Footer />
+                </div>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="flex flex-col">
-            <Navbar />
-            <main className="pt-24 md:pt-32 px-4 md:px-8 lg:px-16">{children}</main>
-          </div>
-        )}
+          ) : (
+            <div className="flex flex-col flex-1">
+              <Navbar />
+              <main className="flex-1 pt-24 md:pt-32 px-4 md:px-8 lg:px-16">{children}</main>
+              <Footer />
+            </div>
+          )}
+        </SidebarProvider>
       </body>
     </html>
-  );
+  )
 }
