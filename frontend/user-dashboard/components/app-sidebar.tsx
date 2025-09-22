@@ -46,6 +46,11 @@ const navigationItems = [
     url: "/profile",
     icon: User,
   },
+    {
+    title: "Exercises",
+    url: "/exercises",   // 👈 matches app/exercises/page.tsx
+    icon: Dumbbell,      // 👈 using Dumbbell icon you already imported
+  },
 ]
 
 const supportItems = [

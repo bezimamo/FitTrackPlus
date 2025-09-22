@@ -1,5 +1,6 @@
 "use client"
 
+import type { Action } from "@/lib/types/dashboard"
 import type { DashboardData } from "@/lib/types/dashboard"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"

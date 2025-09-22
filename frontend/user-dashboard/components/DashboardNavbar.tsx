@@ -17,10 +17,10 @@ export default function DashboardNavbar() {
           Profile
         </Link>
         <Link
-          href="/dashboard/membership"
+          href="/exercises"
           className="text-gray-700 hover:text-blue-600 font-semibold transition-colors"
         >
-          Membership
+          Exercises
         </Link>
         <Link
           href="/dashboard/plans"

@@ -6,7 +6,6 @@ import { Navbar } from "@/components/Navbar"
 import { AppSidebar } from "@/components/app-sidebar"
 import DashboardNavbar from "@/components/DashboardNavbar"
 import { SidebarProvider } from "@/components/ui/sidebar"
-import { Footer } from "@/components/footer"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -28,7 +27,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 
                 {/* Footer wrapper with z-index and full width */}
                 <div className="w-full z-10">
-                  <Footer />
                 </div>
               </div>
             </div>
@@ -36,7 +34,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="flex flex-col flex-1">
               <Navbar />
               <main className="flex-1 pt-24 md:pt-32 px-4 md:px-8 lg:px-16">{children}</main>
-              <Footer />
             </div>
           )}
         </SidebarProvider>
