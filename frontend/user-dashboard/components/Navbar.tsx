@@ -24,25 +24,26 @@ export function Navbar() {
   const { setTheme } = useTheme()
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-16 items-center px-4 gap-4">
-        {/* Sidebar Trigger */}
-        <SidebarTrigger />
-
-        {/* Logo */}
-        <div className="flex items-center gap-2">
-          <h1 className="text-xl font-bold text-primary">FitTrack+</h1>
+   <header className="absolute top-0 left-0 z-50 w-full bg-transparent">
+  <div className="flex h-16 items-center justify-between px-6 md:px-12">
+    
+        {/* LEFT: Sidebar + Logo */}
+        <div className="flex items-center gap-3">
+          <SidebarTrigger />
+          <Link href="/" className="flex items-center gap-2">
+            <h1 className="text-xl font-bold text-primary">FitTrack+</h1>
+          </Link>
         </div>
 
-        {/* Search */}
-        <div className="flex-1 max-w-md">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        {/* MIDDLE: Search */}
+        <div className="hidden md:flex flex-1 max-w-md mx-6">
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search workouts, plans, members..." className="pl-10 bg-muted/50" />
           </div>
         </div>
 
-        {/* Right side actions */}
+        {/* RIGHT: Notifications + User */}
         <div className="flex items-center gap-2">
           {/* Notifications */}
           <DropdownMenu>

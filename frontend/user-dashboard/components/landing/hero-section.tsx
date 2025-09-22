@@ -6,31 +6,32 @@ import Link from "next/link"
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center">
+    <section className="relative w-screen h-screen flex flex-col">
       {/* Background Image */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 -z-10">
         <img
           src="/diverse-people-working-out-in-modern-gym-with-equi.png"
           alt="People working out in modern gym"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-center"
         />
-        {/* Overlay with dark + accent tint */}
+        {/* Overlay */}
         <div className="absolute inset-0 bg-black/70 bg-gradient-to-r from-primary/40 via-black/60 to-secondary/40" />
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 text-center text-white">
+      {/* Content (pushed down so it doesn’t clash with navbar) */}
+      <div className="flex flex-1 items-center justify-center text-center text-white px-6">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 text-balance">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6">
             Transform Your
             <span className="text-primary block">Fitness Journey</span>
           </h1>
 
           <p className="text-xl md:text-2xl text-gray-200 mb-8 max-w-3xl mx-auto">
-            Track progress, book sessions, and achieve your goals with FitTrack+ — 
+            Track progress, book sessions, and achieve your goals with FitTrack+ —
             the complete fitness management platform for members, trainers, and staff.
           </p>
 
+          {/* Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
             <Button asChild size="lg" className="text-lg px-8 py-6 h-auto">
               <Link href="/auth/register" className="flex items-center gap-2">
@@ -39,7 +40,12 @@ export function HeroSection() {
               </Link>
             </Button>
 
-            <Button asChild variant="outline" size="lg" className="text-lg px-8 py-6 h-auto border-white text-black hover:bg-white/20">
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="text-lg px-8 py-6 h-auto border-white text-black hover:bg-white/20"
+            >
               <Link href="/auth/login" className="flex items-center gap-2">
                 Sign In
               </Link>
