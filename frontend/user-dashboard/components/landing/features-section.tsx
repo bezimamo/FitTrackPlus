@@ -1,4 +1,3 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar, TrendingUp, Users, Target, Clock, Award } from "lucide-react"
 
 const features = [
@@ -36,7 +35,7 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section className="py-24 bg-muted/30">
+    <section id="features" className="py-24 bg-muted/20">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6 text-balance">
@@ -51,20 +50,22 @@ export function FeaturesSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <Card
+            <div
               key={index}
-              className="group hover:shadow-lg transition-all duration-300 border-border/50 hover:border-primary/20"
+              className="group relative overflow-hidden rounded-2xl border border-primary/15 bg-background/80 backdrop-blur-sm p-6 md:p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary/25"
             >
-              <CardHeader className="text-center pb-4">
-                <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                  <feature.icon className="h-8 w-8 text-primary" />
-                </div>
-                <CardTitle className="text-xl font-semibold">{feature.title}</CardTitle>
-              </CardHeader>
-              <CardContent className="text-center">
-                <CardDescription className="text-base leading-relaxed">{feature.description}</CardDescription>
-              </CardContent>
-            </Card>
+              <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
+              <div className="w-14 h-14 rounded-full bg-primary/10 ring-1 ring-primary/25 grid place-items-center mb-4 transition-all duration-300 group-hover:bg-primary/15 group-hover:ring-primary/40">
+                <feature.icon className="h-7 w-7 text-primary transition-transform duration-300 group-hover:scale-110" />
+              </div>
+              <h3 className="text-xl font-semibold text-foreground tracking-tight">{feature.title}</h3>
+              <p className="mt-2 text-base leading-relaxed text-muted-foreground">{feature.description}</p>
+              <div className="mt-6 h-px w-full bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+              <button className="mt-4 inline-flex items-center gap-2 text-sm text-primary hover:underline">
+                Learn more
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
           ))}
         </div>
       </div>

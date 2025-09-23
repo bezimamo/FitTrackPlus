@@ -2,7 +2,6 @@
 
 import "./globals.css"
 import { usePathname } from "next/navigation"
-import { Navbar } from "@/components/Navbar"
 import { AppSidebar } from "@/components/app-sidebar"
 import DashboardNavbar from "@/components/DashboardNavbar"
 import { SidebarProvider } from "@/components/ui/sidebar"
@@ -32,8 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           ) : (
             <div className="flex flex-col flex-1">
-              <Navbar />
-              <main className="flex-1 pt-24 md:pt-32 px-4 md:px-8 lg:px-16">{children}</main>
+              <main className="flex-1 p-0">{children}</main>
             </div>
           )}
         </SidebarProvider>

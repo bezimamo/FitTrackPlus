@@ -6,7 +6,7 @@ import Link from "next/link"
 
 export function HeroSection() {
   return (
-    <section className="relative w-screen h-screen flex flex-col">
+    <section id="home" className="relative w-screen h-screen flex flex-col">
       {/* Background Image */}
       <div className="absolute inset-0 -z-10">
         <img
@@ -18,22 +18,22 @@ export function HeroSection() {
         <div className="absolute inset-0 bg-black/70 bg-gradient-to-r from-primary/40 via-black/60 to-secondary/40" />
       </div>
 
-      {/* Content (pushed down so it doesn’t clash with navbar) */}
+      {/* Content - keep hero pinned to viewport; navbar floats above */}
       <div className="flex flex-1 items-center justify-center text-center text-white px-6">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">
             Transform Your
             <span className="text-primary block">Fitness Journey</span>
           </h1>
 
-          <p className="text-xl md:text-2xl text-gray-200 mb-8 max-w-3xl mx-auto">
+          <p className="text-lg md:text-xl text-gray-200/90 mb-8 max-w-3xl mx-auto">
             Track progress, book sessions, and achieve your goals with FitTrack+ —
             the complete fitness management platform for members, trainers, and staff.
           </p>
 
           {/* Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <Button asChild size="lg" className="text-lg px-8 py-6 h-auto">
+            <Button asChild size="lg" className="text-lg px-8 py-6 h-auto rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20">
               <Link href="/auth/register" className="flex items-center gap-2">
                 Get Started Free
                 <ArrowRight className="h-5 w-5" />
@@ -44,7 +44,7 @@ export function HeroSection() {
               asChild
               variant="outline"
               size="lg"
-              className="text-lg px-8 py-6 h-auto border-white text-black hover:bg-white/20"
+              className="text-lg px-8 py-6 h-auto rounded-full border-white/40 bg-white/10 text-white hover:bg-white/20 backdrop-blur"
             >
               <Link href="/auth/login" className="flex items-center gap-2">
                 Sign In
